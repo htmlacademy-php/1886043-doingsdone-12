@@ -3,37 +3,37 @@
 $show_complete_tasks = rand(0, 1);
 $projects_categ_arr=['Входящие', 'Учеба', 'Работа', 'Домашние дела', 'Авто'];
 $tasks_list_arr=[
-    '1' => [
+    [
       'task' => 'Собеседование в IT компании',
       'finish_date' => '01.12.2019',
       'category' => 'Работа',
       'finish_flag' => false,
     ],
-    '2' => [
+    [
       'task' => 'Выполнить тестовое задание',
       'finish_date' => '25.12.2019',
       'category' => 'Работа',
       'finish_flag' => false,
     ],
-    '3' => [
+    [
       'task' => 'Сделать задание первого раздела',
       'finish_date' => '21.12.2019',
       'category' => 'Учеба',
       'finish_flag' => true,
     ],
-    '4' => [
+    [
       'task' => 'Встреча с другом',
       'finish_date' => '22.12.2019',
       'category' => 'Входящие',
       'finish_flag' => false,
     ],
-    '5' => [
+    [
       'task' => 'Купить корм для кота',
       'finish_date' => null,
       'category' => 'Домашние дела',
       'finish_flag' => false,
     ],
-    '6' => [
+    [
       'task' => 'Заказать пиццу',
       'finish_date' => null,
       'category' => 'Домашние дела',
@@ -135,7 +135,6 @@ $tasks_list_arr=[
                             </tr>
                         <?php endif ?>
                     <?php endforeach;?>
-
                 </table>
             </main>
         </div>
