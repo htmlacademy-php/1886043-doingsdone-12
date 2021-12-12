@@ -40,6 +40,18 @@ $tasks_list_arr = [
         'finish_flag' => false,
     ],
 ];
+
+function tasks_counter($tasks_lists, $project_name) {
+    $number_of_tasks = 0;
+    foreach ($tasks_lists as $task)
+    {
+        if ($task['category'] === $project_name)
+        {
+             $number_of_tasks++;
+        }
+    }
+    return $number_of_tasks;
+}
 ?>
 <!DOCTYPE html>
 <html lang="ru">
@@ -84,7 +96,7 @@ $tasks_list_arr = [
                             <?php foreach ($projects_categ_arr as $project) : ?>
                                 <li class="main-navigation__list-item">
                                     <a class="main-navigation__list-item-link" href="#"><?= $project; ?></a>
-                                    <span class="main-navigation__list-item-count">0</span>
+                                    <span class="main-navigation__list-item-count"><?=tasks_counter($tasks_list_arr, $project) ?></span>
                                 </li>
                             <?php endforeach; ?>
                         </ul>
