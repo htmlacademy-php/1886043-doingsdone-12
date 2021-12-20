@@ -1,8 +1,8 @@
 <?php
 // показывать или нет выполненные задачи
 $showCompleteTasks = rand(0, 1);
-$projectsCategArr = ['Входящие', 'Учеба', 'Работа', 'Домашние дела', 'Авто'];
-$tasksListArr = [
+$projectsCategories = ['Входящие', 'Учеба', 'Работа', 'Домашние дела', 'Авто'];
+$tasksLists = [
     [
         'task' => 'Собеседование в IT компании',
         'finishDate' => '01.12.2019',
@@ -41,9 +41,9 @@ $tasksListArr = [
     ],
 ];
 
-function countTasks($tasksLists, $projectName) {
+function countTasks(array $innerTasksLists, string $projectName): int {
     $numberOfTasks = 0;
-    foreach ($tasksLists as $task) {
+    foreach ($innerTasksLists as $task) {
         if ($task['category'] === $projectName) {
              $numberOfTasks++;
         }
@@ -91,10 +91,10 @@ function countTasks($tasksLists, $projectName) {
 
                     <nav class="main-navigation">
                         <ul class="main-navigation__list">
-                            <?php foreach ($projectsCategArr as $project) : ?>
+                            <?php foreach ($projectsCategories as $project) : ?>
                                 <li class="main-navigation__list-item">
                                     <a class="main-navigation__list-item-link" href="#"><?= $project; ?></a>
-                                    <span class="main-navigation__list-item-count"><?=countTasks($tasksListArr, $project) ?></span>
+                                    <span class="main-navigation__list-item-count"><?=countTasks($tasksLists, $project) ?></span>
                                 </li>
                             <?php endforeach; ?>
                         </ul>
@@ -128,7 +128,7 @@ function countTasks($tasksLists, $projectName) {
                     </div>
 
                     <table class="tasks">
-                        <?php foreach ($tasksListArr as $currentTask) : ?>
+                        <?php foreach ($tasksLists as $currentTask) : ?>
                             <?php if (($currentTask['finishFlag']) && ($showCompleteTasks === 0)) : ?>
                                 <?php continue ?>
                             <?php else : ?>
