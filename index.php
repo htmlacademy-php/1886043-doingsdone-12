@@ -1,45 +1,55 @@
 <?php
 // показывать или нет выполненные задачи
-$show_complete_tasks = rand(0, 1);
-$projects_categ_arr = ['Входящие', 'Учеба', 'Работа', 'Домашние дела', 'Авто'];
-$tasks_list_arr = [
+$showCompleteTasks = rand(0, 1);
+$projectsCategories = ['Входящие', 'Учеба', 'Работа', 'Домашние дела', 'Авто'];
+$tasksLists = [
     [
         'task' => 'Собеседование в IT компании',
-        'finish_date' => '01.12.2019',
+        'finishDate' => '01.12.2019',
         'category' => 'Работа',
-        'finish_flag' => false,
+        'finishFlag' => false,
     ],
     [
         'task' => 'Выполнить тестовое задание',
-        'finish_date' => '25.12.2019',
+        'finishDate' => '25.12.2019',
         'category' => 'Работа',
-        'finish_flag' => false,
+        'finishFlag' => false,
     ],
     [
         'task' => 'Сделать задание первого раздела',
-        'finish_date' => '21.12.2019',
+        'finishDate' => '21.12.2019',
         'category' => 'Учеба',
-        'finish_flag' => true,
+        'finishFlag' => true,
     ],
     [
         'task' => 'Встреча с другом',
-        'finish_date' => '22.12.2019',
+        'finishDate' => '22.12.2019',
         'category' => 'Входящие',
-        'finish_flag' => false,
+        'finishFlag' => false,
     ],
     [
         'task' => 'Купить корм для кота',
-        'finish_date' => null,
+        'finishDate' => null,
         'category' => 'Домашние дела',
-        'finish_flag' => false,
+        'finishFlag' => false,
     ],
     [
         'task' => 'Заказать пиццу',
-        'finish_date' => null,
+        'finishDate' => null,
         'category' => 'Домашние дела',
-        'finish_flag' => false,
+        'finishFlag' => false,
     ],
 ];
+
+function countTasks(array $innerTasksLists, string $projectName): int {
+    $numberOfTasks = 0;
+    foreach ($innerTasksLists as $task) {
+        if ($task['category'] === $projectName) {
+             $numberOfTasks++;
+        }
+    }
+    return $numberOfTasks;
+}
 ?>
 <!DOCTYPE html>
 <html lang="ru">
@@ -81,10 +91,10 @@ $tasks_list_arr = [
 
                     <nav class="main-navigation">
                         <ul class="main-navigation__list">
-                            <?php foreach ($projects_categ_arr as $project) : ?>
+                            <?php foreach ($projectsCategories as $project) : ?>
                                 <li class="main-navigation__list-item">
                                     <a class="main-navigation__list-item-link" href="#"><?= $project; ?></a>
-                                    <span class="main-navigation__list-item-count">0</span>
+                                    <span class="main-navigation__list-item-count"><?=countTasks($tasksLists, $project) ?></span>
                                 </li>
                             <?php endforeach; ?>
                         </ul>
@@ -112,24 +122,24 @@ $tasks_list_arr = [
 
                         <label class="checkbox">
                             <!--добавить сюда атрибут "checked", если переменная $show_complete_tasks равна единице-->
-                            <input class="checkbox__input visually-hidden show_completed" type="checkbox" <?= $show_complete_tasks === 1 ? "checked" : "" ?>>
+                            <input class="checkbox__input visually-hidden show_completed" type="checkbox" <?= $showCompleteTasks === 1 ? "checked" : "" ?>>
                             <span class="checkbox__text">Показывать выполненные</span>
                         </label>
                     </div>
 
                     <table class="tasks">
-                        <?php foreach ($tasks_list_arr as $current_task) : ?>
-                            <?php if (($current_task['finish_flag']) && ($show_complete_tasks === 0)) : ?>
+                        <?php foreach ($tasksLists as $currentTask) : ?>
+                            <?php if (($currentTask['finishFlag']) && ($showCompleteTasks === 0)) : ?>
                                 <?php continue ?>
                             <?php else : ?>
-                                <tr class="tasks__item task <?= ($current_task['finish_flag'] ? 'task--completed' : '') ?>">
+                                <tr class="tasks__item task <?= ($currentTask['finishFlag'] ? 'task--completed' : '') ?>">
                                     <td class="task__select">
                                         <label class="checkbox task__checkbox">
                                             <input class="checkbox__input visually-hidden" type="checkbox" checked>
-                                            <span class="checkbox__text"><?= $current_task['task'] ?></span>
+                                            <span class="checkbox__text"><?= $currentTask['task'] ?></span>
                                         </label>
                                     </td>
-                                    <td class="task__date"><?= $current_task['finish_date'] ?></td>
+                                    <td class="task__date"><?= $currentTask['finishDate'] ?></td>
                                     <td class="task__controls"> </td>
                                 </tr>
                             <?php endif ?>
