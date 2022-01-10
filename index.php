@@ -42,7 +42,8 @@ $tasksLists = [
     ],
 ];
 
-function countTasks(array $innerTasksLists, string $projectName): int {
+function countTasks(array $innerTasksLists, string $projectName): int
+{
     $numberOfTasks = 0;
     foreach ($innerTasksLists as $task) {
         if ($task['category'] === $projectName) {
@@ -52,14 +53,18 @@ function countTasks(array $innerTasksLists, string $projectName): int {
     return $numberOfTasks;
 }
 
-function timeInterval($finishPoint) {
+function timeToFinish(string $finishPoint): int
+{
     $date = new DateTime($finishPoint);
     return $date->getTimestamp() - time();
 }
 
-function less24hours($taskCountdown, $timeLimit = 86401) {
-    if ($taskCountdown&&timeInterval($taskCountdown) < $timeLimit) {
-        return 'true';
+function less24hours(string $Endpoint = NULL, int $timeLimit = 86401): bool
+{
+    if (($Endpoint != '') && (timeToFinish($Endpoint) < $timeLimit)) {
+        return TRUE;
+    } else {
+        return FALSE;
     };
 }
 
