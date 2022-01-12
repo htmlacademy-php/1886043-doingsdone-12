@@ -6,25 +6,25 @@ $projectsCategories = ['Входящие', 'Учеба', 'Работа', 'Дом
 $tasksLists = [
     [
         'task' => 'Собеседование в IT компании',
-        'finishDate' => '01.12.2019',
+        'finishDate' => '01.07.2022',
         'category' => 'Работа',
         'finishFlag' => false,
     ],
     [
         'task' => 'Выполнить тестовое задание',
-        'finishDate' => '25.12.2019',
+        'finishDate' => '25.01.2022',
         'category' => 'Работа',
         'finishFlag' => false,
     ],
     [
         'task' => 'Сделать задание первого раздела',
-        'finishDate' => '21.12.2019',
+        'finishDate' => '31.12.2021',
         'category' => 'Учеба',
         'finishFlag' => true,
     ],
     [
         'task' => 'Встреча с другом',
-        'finishDate' => '22.12.2019',
+        'finishDate' => '30.12.2021',
         'category' => 'Входящие',
         'finishFlag' => false,
     ],
@@ -42,7 +42,8 @@ $tasksLists = [
     ],
 ];
 
-function countTasks(array $innerTasksLists, string $projectName): int {
+function countTasks(array $innerTasksLists, string $projectName): int
+{
     $numberOfTasks = 0;
     foreach ($innerTasksLists as $task) {
         if ($task['category'] === $projectName) {
@@ -50,6 +51,23 @@ function countTasks(array $innerTasksLists, string $projectName): int {
         }
     }
     return $numberOfTasks;
+}
+
+function timeToFinish(string $taskFinishDate): int
+{
+    $date = new DateTime($taskFinishDate);
+    return $date->getTimestamp() - time();
+}
+
+function less24hours (string $taskFinishDate = null): string
+{
+    if ($taskFinishDate === null) {
+        return '';
+    } elseif (timeToFinish($taskFinishDate) < 86401) {
+        return 'task--important';
+    } else {
+        return '';
+    }
 }
 
 $pageContent = include_template('main.php', ['projectsCategories' => $projectsCategories, 'tasksLists' => $tasksLists, 'showCompleteTasks' => $showCompleteTasks,]);
