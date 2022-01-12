@@ -53,19 +53,21 @@ function countTasks(array $innerTasksLists, string $projectName): int
     return $numberOfTasks;
 }
 
-function timeToFinish(string $finishPoint): int
+function timeToFinish(string $taskFinishDate): int
 {
-    $date = new DateTime($finishPoint);
+    $date = new DateTime($taskFinishDate);
     return $date->getTimestamp() - time();
 }
 
-function less24hours(string $Endpoint = NULL, int $timeLimit = 86401): bool
+function less24hours (string $taskFinishDate = null): string
 {
-    if (($Endpoint != '') && (timeToFinish($Endpoint) < $timeLimit)) {
-        return TRUE;
+    if ($taskFinishDate === null) {
+        return '';
+    } elseif (timeToFinish($taskFinishDate) < 86401) {
+        return 'task--important';
     } else {
-        return FALSE;
-    };
+        return '';
+    }
 }
 
 $pageContent = include_template('main.php', ['projectsCategories' => $projectsCategories, 'tasksLists' => $tasksLists, 'showCompleteTasks' => $showCompleteTasks,]);
