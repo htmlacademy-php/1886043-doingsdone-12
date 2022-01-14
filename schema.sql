@@ -6,54 +6,50 @@ CREATE SCHEMA IF NOT EXISTS `doingsdone` DEFAULT CHARACTER SET utf8 ;
 USE `doingsdone` ;
 
 -- -----------------------------------------------------
--- Table `doingsdone`.`user`
+-- Table `user`
 -- -----------------------------------------------------
-CREATE TABLE IF NOT EXISTS `doingsdone`.`user` (
-  `user_id` INT UNSIGNED NOT NULL AUTO_INCREMENT,
+CREATE TABLE IF NOT EXISTS `user` (
+  `id` INT UNSIGNED NOT NULL AUTO_INCREMENT,
   `registration_date` DATE NOT NULL,
-  `user_email` VARCHAR(80) NULL,
+  `email` VARCHAR(80) NULL,
   `name` VARCHAR(80) NOT NULL,
   `password` VARCHAR(80) NULL,
-  PRIMARY KEY (`user_id`),
-  UNIQUE INDEX `user_id_UNIQUE` (`user_id` ASC))
+  PRIMARY KEY (`id`),
+  UNIQUE INDEX `id_UNIQUE` (`id` ASC))
 ENGINE = InnoDB;
 
 -- -----------------------------------------------------
--- Table `doingsdone`.`project`
+-- Table `project`
 -- -----------------------------------------------------
-CREATE TABLE IF NOT EXISTS `doingsdone`.`project` (
-  `project_id` INT UNSIGNED NOT NULL AUTO_INCREMENT,
-  `project_name` VARCHAR(45) NULL,
-  `creator_id` INT UNSIGNED NOT NULL,
-  PRIMARY KEY (`project_id`),
-  UNIQUE INDEX `project_id_UNIQUE` (`project_id` ASC),
-  INDEX `creator_id_idx` (`creator_id` ASC),
-  CONSTRAINT `creator_id`
-    FOREIGN KEY (`creator_id`)
-    REFERENCES `doingsdone`.`user` (`user_id`)
-    ON DELETE NO ACTION
-    ON UPDATE NO ACTION)
+CREATE TABLE IF NOT EXISTS `project` (
+  `id` INT UNSIGNED NOT NULL AUTO_INCREMENT,
+  `name` VARCHAR(45) NULL,
+  `author_id` INT UNSIGNED NOT NULL,
+  PRIMARY KEY (`id`),
+  UNIQUE INDEX `id_UNIQUE` (`id` ASC),
+  INDEX `author_id_idx` (`author_id` ASC),
+  CONSTRAINT `author_id`
+    FOREIGN KEY (`author_id`)
+    REFERENCES `user` (`id`))    
 ENGINE = InnoDB;
 
 -- -----------------------------------------------------
--- Table `doingsdone`.`task`
+-- Table `task`
 -- -----------------------------------------------------
-CREATE TABLE IF NOT EXISTS `doingsdone`.`task` (
-  `task_id` INT UNSIGNED NOT NULL AUTO_INCREMENT,
-  `task_creation_date` TIMESTAMP NULL,
-  `task_status` TINYINT NULL,
-  `task_name` VARCHAR(45) NOT NULL,
+CREATE TABLE IF NOT EXISTS `task` (
+  `id` INT UNSIGNED NOT NULL AUTO_INCREMENT,
+  `created_at` TIMESTAMP NULL,
+  `completed` TINYINT NULL,
+  `name` VARCHAR(45) NOT NULL,
   `file_adress` VARCHAR(80) NULL,
   `finish_date` DATE NULL,
   `project_id` INT UNSIGNED NOT NULL,
-  PRIMARY KEY (`task_id`),
-  UNIQUE INDEX `task_id_UNIQUE` (`task_id` ASC),
+  PRIMARY KEY (`id`),
+  UNIQUE INDEX `id_UNIQUE` (`id` ASC),
   INDEX `project_id_idx` (`project_id` ASC),
   CONSTRAINT `project_id`
     FOREIGN KEY (`project_id`)
-    REFERENCES `doingsdone`.`project` (`project_id`)
-    ON DELETE NO ACTION
-    ON UPDATE NO ACTION)
+    REFERENCES `project` (id`))
 ENGINE = InnoDB;
 
 
