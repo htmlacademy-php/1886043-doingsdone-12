@@ -5,21 +5,7 @@ USE `doingsdone` ;
 -- -----------------------------------------------------
 INSERT INTO users (id, registration_date, email, name, password) VALUE ('1', '17.12.2021', 'nikolay@mail.com', 'Николай', '12345');
 INSERT INTO users (id, registration_date, email, name, password) VALUE ('2', '18.12.2021', 'konstya@mail.com', 'Константин', '67890');
--- -----------------------------------------------------
--- INSERT Table `task` существующий список задач;
--- -----------------------------------------------------
-INSERT INTO tasks (name, deadline, project_id, finish_flag) VALUE ('Собеседование в IT компании', '01.07.2022', '3', FALSE);
-INSERT INTO tasks (name, deadline, project_id, finish_flag) VALUE ('Выполнить тестовое задание', '25.01.2022', '3', FALSE);
-INSERT INTO tasks (name, deadline, project_id, finish_flag) VALUE ('Сделать задание первого раздела', '31.12.2021', '2', TRUE);
-INSERT INTO tasks (name, deadline, project_id, finish_flag) VALUE ('Встреча с другом', '30.12.2021', '1', FALSE);
-INSERT INTO tasks (name, deadline, project_id, finish_flag) VALUE ('Купить корм для кота', NULL, '4', FALSE);
-INSERT INTO tasks (name, deadline, project_id, finish_flag) VALUE ('Заказать пиццу', NULL, '4', FALSE);
-INSERT INTO tasks (name, deadline, project_id, finish_flag) VALUE ('Собеседование в IT компании', '01.07.2022', '23', FALSE);
-INSERT INTO tasks (name, deadline, project_id, finish_flag) VALUE ('Выполнить тестовое задание', '25.01.2022', '23', FALSE);
-INSERT INTO tasks (name, deadline, project_id, finish_flag) VALUE ('Сделать задание первого раздела', '31.12.2021', '22', TRUE);
-INSERT INTO tasks (name, deadline, project_id, finish_flag) VALUE ('Встреча с другом', '30.12.2021', '21', FALSE);
-INSERT INTO tasks (name, deadline, project_id, finish_flag) VALUE ('Купить корм для кота', NULL, '24', FALSE);
-INSERT INTO tasks (name, deadline, project_id, finish_flag) VALUE ('Заказать пиццу', NULL, '24', FALSE);
+
 -- -----------------------------------------------------
 -- INSERT Table `projects` существующий список проектов;
 -- -----------------------------------------------------
@@ -34,6 +20,22 @@ INSERT INTO projects (id, name, user_id) VALUE ('23', 'Работа', '2');
 INSERT INTO projects (id, name, user_id) VALUE ('24', 'Домашние дела', '2');
 INSERT INTO projects (id, name, user_id) VALUE ('25', 'Авто', '2');
 
+-- -----------------------------------------------------
+-- INSERT Table `task` существующий список задач;
+-- -----------------------------------------------------
+INSERT INTO tasks (name, deadline, project_id, is_finished) VALUE ('Собеседование в IT компании', '01.07.2022', '3');
+INSERT INTO tasks (name, deadline, project_id, is_finished) VALUE ('Выполнить тестовое задание', '25.01.2022', '3');
+INSERT INTO tasks (name, deadline, project_id, is_finished) VALUE ('Сделать задание первого раздела', '31.12.2021', '2', TRUE);
+INSERT INTO tasks (name, deadline, project_id, is_finished) VALUE ('Встреча с другом', '30.12.2021', '1');
+INSERT INTO tasks (name, deadline, project_id, is_finished) VALUE ('Купить корм для кота', NULL, '4');
+INSERT INTO tasks (name, deadline, project_id, is_finished) VALUE ('Заказать пиццу', NULL, '4');
+INSERT INTO tasks (name, deadline, project_id, is_finished) VALUE ('Собеседование в IT компании', '01.07.2022', '23');
+INSERT INTO tasks (name, deadline, project_id, is_finished) VALUE ('Выполнить тестовое задание', '25.01.2022', '23');
+INSERT INTO tasks (name, deadline, project_id, is_finished) VALUE ('Сделать задание первого раздела', '31.12.2021', '22', TRUE);
+INSERT INTO tasks (name, deadline, project_id, is_finished) VALUE ('Встреча с другом', '30.12.2021', '21');
+INSERT INTO tasks (name, deadline, project_id, is_finished) VALUE ('Купить корм для кота', NULL, '24');
+INSERT INTO tasks (name, deadline, project_id, is_finished) VALUE ('Заказать пиццу', NULL, '24');
+
 -- -------------------------------------------------------------------------------
 -- SELECT Table `project` получить список из всех проектов для одного пользователя;
 -- -------------------------------------------------------------------------------
@@ -47,7 +49,7 @@ SELECT tasks.name FROM tasks JOIN projects ON tasks.project_id = projects.id WHE
 -- -----------------------------------------------------
 -- Table `task` пометить задачу как выполненную;
 -- -----------------------------------------------------
-UPDATE tasks SET finish_flag = TRUE WHERE id = '4';
+UPDATE tasks SET is_finished = TRUE WHERE id = '4';
 
 -- -----------------------------------------------------------
 -- Table `task` обновить название задачи по её идентификатору.
