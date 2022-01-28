@@ -2,51 +2,40 @@
 require_once 'helpers.php';
 
 $showCompleteTasks = rand(0, 1);
-$projectsCategories = ['Входящие', 'Учеба', 'Работа', 'Домашние дела', 'Авто'];
-$tasksLists = [
-    [
-        'task' => 'Собеседование в IT компании',
-        'finishDate' => '01.07.2022',
-        'category' => 'Работа',
-        'finishFlag' => false,
-    ],
-    [
-        'task' => 'Выполнить тестовое задание',
-        'finishDate' => '25.01.2022',
-        'category' => 'Работа',
-        'finishFlag' => false,
-    ],
-    [
-        'task' => 'Сделать задание первого раздела',
-        'finishDate' => '31.12.2021',
-        'category' => 'Учеба',
-        'finishFlag' => true,
-    ],
-    [
-        'task' => 'Встреча с другом',
-        'finishDate' => '30.12.2021',
-        'category' => 'Входящие',
-        'finishFlag' => false,
-    ],
-    [
-        'task' => 'Купить корм для кота',
-        'finishDate' => null,
-        'category' => 'Домашние дела',
-        'finishFlag' => false,
-    ],
-    [
-        'task' => 'Заказать пиццу',
-        'finishDate' => null,
-        'category' => 'Домашние дела',
-        'finishFlag' => false,
-    ],
-];
 
-function countTasks(array $innerTasksLists, string $projectName): int
+$connection = mysqli_connect('127.0.0.1', 'root', '', 'doingsdone');
+if (!$connection) {
+    print('Ошибка подключения: ' .mysqli_connect_error());
+} else {
+    mysqli_set_charset($connection, 'utf8');
+    $sqlProjectsQuery = 'SELECT projects.title
+                             FROM projects
+                             JOIN users ON users.id = projects.user_id
+                            WHERE users.id = "3"';
+    $projectsQueryResult = mysqli_query($connection, $sqlProjectsQuery);
+    $projects = array_column((mysqli_fetch_all($projectsQueryResult, MYSQLI_ASSOC)), 'title');
+
+    $sqlTaskQuery = 'SELECT tasks.name, tasks.deadline, projects.title, tasks.is_finished
+                       FROM projects
+                       JOIN users ON users.id = projects.user_id
+                       JOIN tasks ON projects.id = tasks.project_id
+                      WHERE users.id = "3"';
+    $taskQueryResult = mysqli_query($connection, $sqlTaskQuery);
+    $tasks = mysqli_fetch_all($taskQueryResult, MYSQLI_ASSOC);
+    foreach ($tasks as $task) {
+        if ($task['is_finished'] === '0') {
+            $task['is_finished'] = false;
+        } else{
+            $task['is_finished'] = true;
+        }
+    }
+}
+
+function countTasks(array $innertasks, string $projectName): int
 {
     $numberOfTasks = 0;
-    foreach ($innerTasksLists as $task) {
-        if ($task['category'] === $projectName) {
+    foreach ($innertasks as $task) {
+        if ($task['title'] === $projectName) {
              $numberOfTasks++;
         }
     }
@@ -70,6 +59,6 @@ function less24hours (string $taskFinishDate = null): string
     }
 }
 
-$pageContent = include_template('main.php', ['projectsCategories' => $projectsCategories, 'tasksLists' => $tasksLists, 'showCompleteTasks' => $showCompleteTasks,]);
+$pageContent = include_template('main.php', ['projects' => $projects, 'tasks' => $tasks, 'showCompleteTasks' => $showCompleteTasks,]);
 $layoutContent = include_template('layout.php', ['content' => $pageContent, 'title' => 'Дела в порядке', 'userName' => 'Константин']);
 print($layoutContent);

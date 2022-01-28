@@ -32,7 +32,7 @@ ENGINE = InnoDB;
 -- -----------------------------------------------------
 CREATE TABLE IF NOT EXISTS `projects` (
   `id` INT UNSIGNED NOT NULL,
-  `name` VARCHAR(45) NOT NULL,
+  `title` VARCHAR(45) NOT NULL,
   `user_id` INT UNSIGNED NOT NULL,
   PRIMARY KEY (`id`),
   UNIQUE INDEX `project_id_UNIQUE` (`id` ASC),
