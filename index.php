@@ -1,34 +1,47 @@
 <?php
+
 require_once 'helpers.php';
+require 'init.php';
+
+const USERID = 3;
 
 $showCompleteTasks = rand(0, 1);
+$con = connection('root','');
 
-$connection = mysqli_connect('127.0.0.1', 'root', '', 'doingsdone');
-if (!$connection) {
-    print('Ошибка подключения: ' .mysqli_connect_error());
-} else {
-    mysqli_set_charset($connection, 'utf8');
-    $sqlProjectsQuery = 'SELECT projects.title
-                             FROM projects
-                             JOIN users ON users.id = projects.user_id
-                            WHERE users.id = "3"';
-    $projectsQueryResult = mysqli_query($connection, $sqlProjectsQuery);
-    $projects = array_column((mysqli_fetch_all($projectsQueryResult, MYSQLI_ASSOC)), 'title');
+function getUsersProjects (mixed $con, $userId): mixed
+{
+    $sqlProjectsQuery = "SELECT projects.title
+                           FROM projects
+                           JOIN users ON users.id = projects.user_id
+                          WHERE users.id = '$userId'";
+    $projectsQueryResult = mysqli_query($con, $sqlProjectsQuery);
+    return array_column((mysqli_fetch_all($projectsQueryResult, MYSQLI_ASSOC)), 'title');
+}
 
-    $sqlTaskQuery = 'SELECT tasks.name, tasks.deadline, projects.title, tasks.is_finished
+function getUsersTasks (mixed $con, int $userId): mixed
+{
+    $sqlTaskQuery = "SELECT tasks.name, tasks.deadline, projects.title, tasks.is_finished
                        FROM projects
                        JOIN users ON users.id = projects.user_id
                        JOIN tasks ON projects.id = tasks.project_id
-                      WHERE users.id = "3"';
-    $taskQueryResult = mysqli_query($connection, $sqlTaskQuery);
+                      WHERE users.id = '$userId'";
+    $taskQueryResult = mysqli_query($con, $sqlTaskQuery);
     $tasks = mysqli_fetch_all($taskQueryResult, MYSQLI_ASSOC);
     foreach ($tasks as $task) {
         if ($task['is_finished'] === '0') {
             $task['is_finished'] = false;
-        } else{
+        } else {
             $task['is_finished'] = true;
         }
     }
+    return $tasks;
+}
+
+if (!$con) {
+    print('Ошибка подключения: ' .mysqli_connect_error());
+    } else {
+    $projects = getUsersProjects($con, USERID);
+    $tasks = getUsersTasks($con, USERID);
 }
 
 function countTasks(array $innertasks, string $projectName): int
