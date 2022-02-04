@@ -10,10 +10,6 @@ SET @OLD_SQL_MODE=@@SQL_MODE, SQL_MODE='ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,N
 -- -----------------------------------------------------
 -- Schema doingsdone
 -- -----------------------------------------------------
-
--- -----------------------------------------------------
--- Schema doingsdone
--- -----------------------------------------------------
 CREATE SCHEMA IF NOT EXISTS `doingsdone` DEFAULT CHARACTER SET utf8 ;
 USE `doingsdone` ;
 
@@ -36,7 +32,7 @@ ENGINE = InnoDB;
 -- -----------------------------------------------------
 CREATE TABLE IF NOT EXISTS `projects` (
   `id` INT UNSIGNED NOT NULL,
-  `name` VARCHAR(45) NOT NULL,
+  `title` VARCHAR(45) NOT NULL,
   `user_id` INT UNSIGNED NOT NULL,
   PRIMARY KEY (`id`),
   UNIQUE INDEX `project_id_UNIQUE` (`id` ASC),

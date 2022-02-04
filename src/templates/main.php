@@ -4,10 +4,10 @@
 
                     <nav class="main-navigation">
                         <ul class="main-navigation__list">
-                            <?php foreach ($projectsCategories as $project) : ?>
+                            <?php foreach ($projects as $project) : ?>
                                 <li class="main-navigation__list-item">
                                     <a class="main-navigation__list-item-link" href="#"><?= htmlspecialchars($project); ?></a>
-                                    <span class="main-navigation__list-item-count"><?=countTasks($tasksLists, $project) ?></span>
+                                    <span class="main-navigation__list-item-count"><?=countTasks($tasks, $project) ?></span>
                                 </li>
                             <?php endforeach; ?>
                         </ul>
@@ -40,20 +40,20 @@
                     </div>
 
                     <table class="tasks">
-                        <?php foreach ($tasksLists as $currentTask) : ?>
-                            <?php if (($currentTask['finishFlag']) && ($showCompleteTasks === 0)) : ?>
+                        <?php foreach ($tasks as $currentTask) : ?>
+                            <?php if (($currentTask['is_finished']) && ($showCompleteTasks === 0)) : ?>
                                 <?php continue ?>
                             <?php else : ?>
-                                <tr class="tasks__item task <?= ($currentTask['finishFlag']) ? "task--completed" : less24hours($currentTask['finishDate']) ?>">
+                                <tr class="tasks__item task <?= ($currentTask['is_finished']) ? "task--completed" : less24hours($currentTask['deadline']) ?>">
                                     <td class="task__select">
                                         <label class="checkbox task__checkbox">
                                             <input class="checkbox__input visually-hidden" type="checkbox" checked>
                                             <span class="checkbox__text">
-                                                <?= htmlspecialchars($currentTask['task']) ?>
+                                                <?= htmlspecialchars($currentTask['name']) ?>
                                             </span>
                                         </label>
                                     </td>
-                                    <td class="task__date"><?= htmlspecialchars($currentTask['finishDate']); ?></td>
+                                    <td class="task__date"><?= htmlspecialchars($currentTask['deadline']); ?></td>
                                     <td class="task__controls"> </td>
                                 </tr>
                             <?php endif ?>
