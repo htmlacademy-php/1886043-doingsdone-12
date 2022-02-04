@@ -7,9 +7,20 @@ function getUsersProjects (mixed $con, $userId): mixed
                            JOIN users ON users.id = projects.user_id
                           WHERE users.id = ?";
     $stmt = mysqli_prepare($con, $sqlProjectsQuery);
-    mysqli_stmt_bind_param($stmt, 'i', $userId);
-    mysqli_stmt_execute($stmt);
+
+    if ($stmt === false) {
+        exit('Ошибка подключения');
+    }
+    if (!mysqli_stmt_bind_param($stmt, 'i', $userId)) {
+        exit('Ошибка подключения');
+    }
+    if (!mysqli_stmt_execute($stmt)) {
+        exit('Ошибка подключения');
+    }
     $res = mysqli_stmt_get_result($stmt);
+    if ($res === false) {
+        exit('Ошибка подключения');
+    }
     $projectsQueryResult = mysqli_fetch_all($res, MYSQLI_ASSOC);
     if (!$projectsQueryResult) {
 	    $error = mysqli_error($con);
@@ -27,11 +38,21 @@ function getUsersTasks (mixed $con, int $userId): mixed
                        JOIN tasks ON projects.id = tasks.project_id
                       WHERE users.id = ?";
     $stmt = mysqli_prepare($con, $sqlTaskQuery);
-    mysqli_stmt_bind_param($stmt, 'i', $userId);
-    mysqli_stmt_execute($stmt);
+    if ($stmt === false) {
+        exit('Ошибка подключения');
+    }
+    if (!mysqli_stmt_bind_param($stmt, 'i', $userId)) {
+        exit('Ошибка подключения');
+    }
+    if (!mysqli_stmt_execute($stmt)) {
+        exit('Ошибка подключения');
+    }
     $res = mysqli_stmt_get_result($stmt);
+    if ($res === false) {
+        exit('Ошибка подключения');
+    }
     $tasks = mysqli_fetch_all($res, MYSQLI_ASSOC);
-        if (!$tasks) {
+    if (!$tasks) {
 	    $error = mysqli_error($con);
 	    exit("Ошибка MySQL: " . $error);
     } else {

@@ -2,13 +2,14 @@
 
 require 'src\init.php';
 require 'src\functions.php';
-require 'src\config.php';
+
+$userId = 3;
 
 $showCompleteTasks = rand(0, 1);
 
-$con = connection(HOST, LOGIN, PASSWORD, DBNAME);
-$projects = getUsersProjects($con, USERID);
-$tasks = getUsersTasks($con, USERID);
+$con = getConnection();
+$projects = getUsersProjects($con, $userId);
+$tasks = getUsersTasks($con, $userId);
 
 $pageContent = include_template('main.php', ['projects' => $projects, 'tasks' => $tasks, 'showCompleteTasks' => $showCompleteTasks,]);
 $layoutContent = include_template('layout.php', ['content' => $pageContent, 'title' => 'Дела в порядке', 'userName' => 'Константин']);
