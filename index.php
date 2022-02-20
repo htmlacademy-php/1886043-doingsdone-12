@@ -7,10 +7,33 @@ $userId = 3;
 
 $showCompleteTasks = rand(0, 1);
 
-$con = getConnection();
-$projects = getUsersProjects($con, $userId);
-$tasks = getUsersTasks($con, $userId);
+$projectId = null;
+if (!empty($_GET['projectId'])) {
+    $projectId = (int)$_GET['projectId'];
+}
 
-$pageContent = include_template('main.php', ['projects' => $projects, 'tasks' => $tasks, 'showCompleteTasks' => $showCompleteTasks,]);
-$layoutContent = include_template('layout.php', ['content' => $pageContent, 'title' => 'Дела в порядке', 'userName' => 'Константин']);
+$con = getConnection();
+$projects = getUserProjects($con, $userId);
+/*foreach ($projects as $project) {
+    var_dump ($project);
+}*/
+$tasks = getUserTasks($con, $userId, $projectId);
+
+$pageContent = include_template(
+    'main.php', [
+        'projects' => $projects,
+        'tasks' => $tasks,
+        'showCompleteTasks' => $showCompleteTasks,
+        'projectId' => $projectId,
+    ]
+);
+
+$layoutContent = include_template(
+    'layout.php', [
+        'content' => $pageContent,
+        'title' => 'Дела в порядке',
+        'userName' => 'Константин'
+    ]
+);
+
 print($layoutContent);
