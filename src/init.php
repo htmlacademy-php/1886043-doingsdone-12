@@ -1,6 +1,9 @@
 <?php
 
-function getConnection(): mixed
+/**
+*@return mixed
+*/
+function getConnection()
 {
     $config = include __DIR__.'/../config.php';
     $con = mysqli_connect(

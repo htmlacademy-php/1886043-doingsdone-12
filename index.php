@@ -1,7 +1,7 @@
 <?php
 
-require 'src\init.php';
-require 'src\functions.php';
+require 'src/init.php';
+require 'src/functions.php';
 
 $userId = 3;
 
@@ -14,9 +14,6 @@ if (!empty($_GET['projectId'])) {
 
 $con = getConnection();
 $projects = getUserProjects($con, $userId);
-/*foreach ($projects as $project) {
-    var_dump ($project);
-}*/
 $tasks = getUserTasks($con, $userId, $projectId);
 
 $pageContent = include_template(

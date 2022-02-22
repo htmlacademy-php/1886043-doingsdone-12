@@ -1,6 +1,11 @@
 <?php
 
-function getUserProjects (mixed $con, $userId): mixed
+/**
+ * @param mixed $con
+ * @param integer $userId
+ * @return mixed
+ */
+function getUserProjects ($con, int $userId)
 {
     $sqlProjectsQuery = "SELECT COUNT(t.id), p.title, p.id
                            FROM projects as p
@@ -30,7 +35,13 @@ function getUserProjects (mixed $con, $userId): mixed
     return $projectsQueryResult;
 }
 
-function getUserTasks (mixed $con, int $userId, $projectId): mixed
+/**
+ * @param mixed $con
+ * @param integer $userId
+ * @param integer $projectId
+ * @return mixed
+ */
+function getUserTasks ($con, int $userId, ?int $projectId)
 {
     $sqlTaskQuery = "SELECT t.name, t.deadline, t.project_id, t.is_finished
                        FROM tasks as t
