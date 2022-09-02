@@ -2,6 +2,31 @@
 
 /**
  * @param mixed $con
+ * @param string $name
+ * @param integer $projectId
+ * @param string $deadline
+ * @param string  $filePath
+ */
+function addNewTask($con, $name, $projectId, $deadline, $filePath)
+{
+    $sqlTaskInsertQuery = "INSERT INTO tasks
+                                   SET name = ?, project_id = ?,
+                                   deadline = ?, path_to_file = ?";
+    $stmt = mysqli_prepare($con, $sqlTaskInsertQuery);
+
+    if ($stmt === false) {
+        exit('Ошибка mysqli_prepare: '.mysqli_error($con));
+    }
+    mysqli_stmt_bind_param($stmt, "siss", $name, $projectId, $deadline, $filePath);
+
+    if (!mysqli_stmt_execute($stmt)) {
+        exit('Ошибка mysqli_stmt_execute');
+    }
+}
+
+
+/**
+ * @param mixed $con
  * @param integer $userId
  * @return mixed
  */
@@ -15,22 +40,22 @@ function getUserProjects ($con, int $userId)
     $stmt = mysqli_prepare($con, $sqlProjectsQuery);
 
     if ($stmt === false) {
-        exit('Ошибка подключения 1: '.mysqli_error($con));
+        exit('mysqli_prepare'.mysqli_error($con));
     }
     if (!mysqli_stmt_bind_param($stmt, 'i', $userId)) {
-        exit('Ошибка подключения2');
+        exit('Ошибка mysqli_bind');
     }
     if (!mysqli_stmt_execute($stmt)) {
-        exit('Ошибка подключения3');
+        exit('Ошибка mysqli_execute');
     }
     $res = mysqli_stmt_get_result($stmt);
     if ($res === false) {
-        exit('Ошибка подключения4');
+        exit('Ошибка get_result');
     }
     $projectsQueryResult = mysqli_fetch_all($res, MYSQLI_ASSOC);
     if (!$projectsQueryResult) {
 	    $error = mysqli_error($con);
-	    exit("Ошибка 1 MySQL: " . $error);
+	    exit("Ошибка mysqli_fetch" . $error);
     }
     return $projectsQueryResult;
 }
@@ -43,10 +68,11 @@ function getUserProjects ($con, int $userId)
  */
 function getUserTasks ($con, int $userId, ?int $projectId)
 {
-    $sqlTaskQuery = "SELECT t.name, t.deadline, t.project_id, t.is_finished
+    $sqlTaskQuery = "SELECT t.name, t.deadline, t.project_id, t.is_finished, t.path_to_file
                        FROM tasks as t
                        JOIN projects as p ON p.id = t.project_id
-                      WHERE p.user_id = ?";
+                      WHERE p.user_id = ?
+                      ORDER BY t.creation_date DESC";
     if (!empty ($projectId)) {
         $sqlTaskQuery = $sqlTaskQuery . " AND t.project_id = ?";
     }
@@ -54,23 +80,23 @@ function getUserTasks ($con, int $userId, ?int $projectId)
     $stmt = mysqli_prepare($con, $sqlTaskQuery);
 
     if ($stmt === false) {
-        exit('Ошибка подключения5: '.mysqli_error($con));
+        exit('Ошибка mysqli_prepare'.mysqli_error($con));
     }
     if (!empty ($projectId)) {
         if (!mysqli_stmt_bind_param($stmt, 'ii', $userId, $projectId)) {
-          exit('Ошибка подключения6');
+          exit('Ошибка stmt_bind 1');
         }
     }else{
         if (!mysqli_stmt_bind_param($stmt, 'i', $userId)) {
-            exit('Ошибка подключения6');
+            exit('Ошибка stmt_bind 2');
         }
     }
     if (!mysqli_stmt_execute($stmt)) {
-        exit('Ошибка подключения7');
+        exit('Ошибка stmt_execute');
     }
     $res = mysqli_stmt_get_result($stmt);
     if ($res === false) {
-        exit('Ошибка подключения8');
+        exit('Ошибка stmt_get_result');
     }
     $tasks = mysqli_fetch_all($res, MYSQLI_ASSOC);
     if (!$tasks) {
@@ -105,7 +131,8 @@ function less24hours (string $taskFinishDate = null): string
 }
 
 function include_template($name, array $data = []) {
-    $name = 'src/templates/' . $name;
+    $root = $_SERVER['DOCUMENT_ROOT'];
+    $name = $root.'/src/templates/' . $name;
     $result = '';
 
     if (!is_readable($name)) {
@@ -128,4 +155,28 @@ function getProjectUrl(int $projectId): string
     $query = http_build_query($params);
     $url = "/" . $scriptname . "?" . $query;
     return $url;
+}
+
+function getPostVal($name) {
+    return $_POST[$name] ?? "";
+}
+
+function validateFilled($name) {
+    if (empty($_POST[$name])) {
+        return "Это поле должно быть заполнено";
+    }
+}
+
+function dateValidate($var_date) {
+    if (!empty($_POST[$var_date])) {
+        $date = $_POST[$var_date];
+        $format = 'Y-m-d';
+        $d = DateTime::createFromFormat($format, $date);
+        if (!($d && $d->format($format) == $date)) {
+            return 'Неверный формат (нужно ГГГГ-ММ-ДД)';
+        }
+        elseif(strtotime($date) < strtotime(date('Y-m-d'))) {
+            return 'Дата должна быть больше или равна текущей';
+        }
+    }
 }
