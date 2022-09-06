@@ -1,7 +1,7 @@
 <?php
 
-require 'src/init.php';
-require 'src/functions.php';
+require_once 'src/init.php';
+require_once 'src/functions.php';
 
 $userId = 3;
 
@@ -29,7 +29,7 @@ $layoutContent = include_template(
     'layout.php', [
         'content' => $pageContent,
         'title' => 'Дела в порядке',
-        'userName' => 'Константин'
+        'userName' => 'Юджин'
     ]
 );
 
