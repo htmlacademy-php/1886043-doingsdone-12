@@ -17,7 +17,7 @@ $tasks = getUserTasks($con, $userId, $projectId);
 
 $errors = [];
 
-if ($_SERVER['REQUEST_METHOD']=='POST') {
+if ($_SERVER['REQUEST_METHOD']==='POST' && !empty($_POST['submit'])) {
 
     $rules = [
         'name' => function () {
@@ -39,20 +39,21 @@ if ($_SERVER['REQUEST_METHOD']=='POST') {
     }
 
     $errors = array_filter($errors);
+    $pathToUploadFile;
 
     if (isset($_FILES)) {
-        $fileName = $_FILES['task']['name'];
-        $filePath = __DIR__;
-        $fileUrl = $fileName;
-        move_uploaded_file($_FILES['task']['tmp_name'], $filePath . $fileName);
-        $fullFileName = $filePath . $fileName;
+        $currentTime = date("YmdHiss");
+        $fileExtension = pathinfo($_FILES['task']['name'], PATHINFO_EXTENSION);
+        $randomName = $currentTime.'.'.$fileExtension;
+        move_uploaded_file($_FILES['task']['tmp_name'], '../uploads' . '/'.$randomName);
+        $pathToUploadFile = $_SERVER['DOCUMENT_ROOT'].'/uploads'.'/'.$randomName;
     }
 
     if (empty($errors)) {
         $date = ($_POST['date'] === '') ? null : ($_POST['date']);
-        $fullName = !isset($fullFileName) ? null: $fullFileName;
-        addNewTask($con, $_POST['name'], intval($_POST['project']), $date, $fullName);
-        header("Location: /index.php");
+        /*$pathToFile = !isset($pathToUploadFile) ? null: $pathToUploadFile;*/
+        addNewTask($con, $_POST['name'], intval($_POST['project']), $date, $pathToUploadFile);
+        header('Location: /index.php');
     };
 
 }
