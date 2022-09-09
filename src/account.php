@@ -6,16 +6,10 @@ require_once 'functions.php';
 $userId;
 
 $con = getConnection();
-$usersEmail = getUsersEmail($con);
 
 $errors = [];
 
 if ($_SERVER['REQUEST_METHOD']==='POST' && !empty($_POST['submit'])) {
-
-    /*var_dump($_POST['email']);
-
-
-    var_dump($mailboxIsBusy);*/
 
     $rules = [
         'email' => function () {
@@ -36,10 +30,10 @@ if ($_SERVER['REQUEST_METHOD']==='POST' && !empty($_POST['submit'])) {
         }
     }
 
-    $mailboxIsBusy = isMailboxBusy($usersEmail, $_POST['email']);
+    $checkedUsersEmail = checkUsersEmail($con, $_POST['email']);
     if(!$errors['email']) {
-        if ($mailboxIsBusy) {
-            $errors['email'] = 'Указанный email уже используэться';
+        if ($checkedUsersEmail===true) {
+            $errors['email'] = 'Указанный email уже используеться';
         }
     };
 

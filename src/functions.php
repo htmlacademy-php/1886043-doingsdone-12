@@ -7,7 +7,7 @@
  * @param string $deadline
  * @param string  $filePath
  */
-function addNewTask(mixed $con, string $name, int  $projectId, ?string  $deadline, ?string  $filePath)
+function addNewTask(mixed $con, string $name, int  $projectId, ?string  $deadline, ?string  $filePath): void
 {
     $sqlTaskInsertQuery = 'INSERT INTO tasks
                               SET name = ?, project_id = ?,
@@ -30,7 +30,7 @@ function addNewTask(mixed $con, string $name, int  $projectId, ?string  $deadlin
  * @param string $email
  * @param string $password
  */
-function createNewUser(mixed $con, string $email, string  $password, string  $name)
+function createNewUser(mixed $con, string $email, string  $password, string  $name): void
 {
     $sqlCreateNewUserQuery = 'INSERT INTO users
                                        SET email = ?,
@@ -50,9 +50,40 @@ function createNewUser(mixed $con, string $email, string  $password, string  $na
 
 /**
  * @param mixed $con
- * @return mixed
+ * @param string $email
+ * @return array
  */
-function getUsersEmail (mixed $con): mixed
+function checkUsersEmail (mixed $con, string $email): bool
+{
+    $sqlcheckUsersEmail = 'SELECT u.email
+                        FROM users as u
+                        WHERE u.email = ?';
+
+    $stmt = mysqli_prepare($con, $sqlcheckUsersEmail);
+
+    if ($stmt === false) {
+        exit('mysqli_prepare'.mysqli_error($con));
+    }
+
+    mysqli_stmt_bind_param($stmt, 's', $email);
+
+    if (!mysqli_stmt_execute($stmt)) {
+        exit('Ошибка mysqli_execute');
+    }
+    $res = mysqli_stmt_get_result($stmt);
+    if ($res === false) {
+        exit('Ошибка get_result');
+    }
+    $checkedUsersEmail = mysqli_fetch_all($res, MYSQLI_ASSOC);
+
+    return (!empty($checkedUsersEmail));
+}
+
+/**
+ * @param mixed $con
+ * @return array
+ */
+function getUsersEmail (mixed $con): array
 {
     $sqlUsersEmailQuery = 'SELECT u.email
                         FROM users as u';
@@ -70,20 +101,20 @@ function getUsersEmail (mixed $con): mixed
     if ($res === false) {
         exit('Ошибка get_result');
     }
-    $UsersEmailQueryResult = mysqli_fetch_all($res, MYSQLI_ASSOC);
-    if (!$UsersEmailQueryResult) {
+    $usersEmailQueryResult = mysqli_fetch_all($res, MYSQLI_ASSOC);
+    if (!$usersEmailQueryResult) {
 	    $error = mysqli_error($con);
 	    exit('Ошибка mysqli_fetch' . $error);
     }
-    return $UsersEmailQueryResult;
+    return $usersEmailQueryResult;
 }
 
 /**
  * @param mixed $con
  * @param integer $userId
- * @return mixed
+ * @return array
  */
-function getUsersData (mixed $con, ?int $userId): mixed
+function getUsersData (mixed $con, ?int $userId): array
 {
     $sqlUsersDataQuery = 'SELECT u.id, u.registration_date, u.email, u.name, u.password
                            FROM users as u';
@@ -118,9 +149,9 @@ function getUsersData (mixed $con, ?int $userId): mixed
 /**
  * @param mixed $con
  * @param integer $userId
- * @return mixed
+ * @return array
  */
-function getUserProjects (mixed $con, int $userId): mixed
+function getUserProjects (mixed $con, int $userId): array
 {
     $sqlProjectsQuery = 'SELECT COUNT(t.id), p.title, p.id
                            FROM projects as p
@@ -154,9 +185,9 @@ function getUserProjects (mixed $con, int $userId): mixed
  * @param mixed $con
  * @param integer $userId
  * @param integer $projectId
- * @return mixed
+ * @return array
  */
-function getUserTasks ($con, int $userId, ?int $projectId): mixed
+function getUserTasks ($con, int $userId, ?int $projectId): array
 {
     $sqlTaskQuery = 'SELECT t.name, t.deadline, t.project_id, t.is_finished, t.path_to_file
                        FROM tasks as t
@@ -285,21 +316,6 @@ function validateFilled(string $name): ?string
         return 'Это поле должно быть заполнено';
     }
     return null;
-}
-
-/**
- * @param mixed $usersEmail
- * @param string $newAccountEmail
- * @return bool
- */
-function isMailboxBusy(mixed $usersEmail, string $newAccountEmail): bool
-{
-    foreach($usersEmail as $userEmail) {
-        if ($userEmail['email'] === $newAccountEmail) {
-            return true;
-        }
-    }
-    return false;
 }
 
 /**
