@@ -51,7 +51,6 @@ if ($_SERVER['REQUEST_METHOD']==='POST' && !empty($_POST['submit'])) {
 
     if (empty($errors)) {
         $date = ($_POST['date'] === '') ? null : ($_POST['date']);
-        /*$pathToFile = !isset($pathToUploadFile) ? null: $pathToUploadFile;*/
         addNewTask($con, $_POST['name'], intval($_POST['project']), $date, $pathToUploadFile);
         header('Location: /index.php');
     };

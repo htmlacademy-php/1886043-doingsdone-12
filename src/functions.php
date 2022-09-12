@@ -7,11 +7,11 @@
  * @param string $deadline
  * @param string  $filePath
  */
-function addNewTask(mixed $con, string $name, int  $projectId, ?string  $deadline, ?string  $filePath)
+function addNewTask(mixed $con, string $name, int  $projectId, ?string  $deadline, ?string  $filePath): void
 {
     $sqlTaskInsertQuery = 'INSERT INTO tasks
-                                   SET name = ?, project_id = ?,
-                                   deadline = ?, path_to_file = ?';
+                              SET name = ?, project_id = ?,
+                              deadline = ?, path_to_file = ?';
     $stmt = mysqli_prepare($con, $sqlTaskInsertQuery);
 
     if ($stmt === false) {
@@ -26,10 +26,132 @@ function addNewTask(mixed $con, string $name, int  $projectId, ?string  $deadlin
 
 /**
  * @param mixed $con
- * @param integer $userId
- * @return mixed
+ * @param string $name
+ * @param string $email
+ * @param string $password
  */
-function getUserProjects (mixed $con, int $userId): mixed
+function createNewUser(mixed $con, string $email, string  $password, string  $name): void
+{
+    $sqlCreateNewUserQuery = 'INSERT INTO users
+                                       SET email = ?,
+                                  password = ?,
+                                      name = ?';
+    $stmt = mysqli_prepare($con, $sqlCreateNewUserQuery);
+
+        if ($stmt === false) {
+        exit('Ошибка mysqli_prepare: '.mysqli_error($con));
+    }
+    mysqli_stmt_bind_param($stmt, 'sss', $email, $password, $name);
+
+    if (!mysqli_stmt_execute($stmt)) {
+        exit('Ошибка mysqli_stmt_execute');
+    }
+}
+
+/**
+ * @param mixed $con
+ * @param string $email
+ * @return array
+ */
+function checkUsersEmail (mixed $con, string $email): bool
+{
+    $sqlcheckUsersEmail = 'SELECT u.email
+                        FROM users as u
+                        WHERE u.email = ?';
+
+    $stmt = mysqli_prepare($con, $sqlcheckUsersEmail);
+
+    if ($stmt === false) {
+        exit('mysqli_prepare'.mysqli_error($con));
+    }
+
+    mysqli_stmt_bind_param($stmt, 's', $email);
+
+    if (!mysqli_stmt_execute($stmt)) {
+        exit('Ошибка mysqli_execute');
+    }
+    $res = mysqli_stmt_get_result($stmt);
+    if ($res === false) {
+        exit('Ошибка get_result');
+    }
+    $checkedUsersEmail = mysqli_fetch_all($res, MYSQLI_ASSOC);
+
+    return (!empty($checkedUsersEmail));
+}
+
+/**
+ * @param mixed $con
+ * @return array
+ */
+function getUsersEmail (mixed $con): array
+{
+    $sqlUsersEmailQuery = 'SELECT u.email
+                        FROM users as u';
+
+    $stmt = mysqli_prepare($con, $sqlUsersEmailQuery);
+
+    if ($stmt === false) {
+        exit('mysqli_prepare'.mysqli_error($con));
+    }
+
+    if (!mysqli_stmt_execute($stmt)) {
+        exit('Ошибка mysqli_execute');
+    }
+    $res = mysqli_stmt_get_result($stmt);
+    if ($res === false) {
+        exit('Ошибка get_result');
+    }
+    $usersEmailQueryResult = mysqli_fetch_all($res, MYSQLI_ASSOC);
+    if (!$usersEmailQueryResult) {
+	    $error = mysqli_error($con);
+	    exit('Ошибка mysqli_fetch' . $error);
+    }
+    return $usersEmailQueryResult;
+}
+
+/**
+ * @param mixed $con
+ * @param integer $userId
+ * @return array
+ */
+function getUsersData (mixed $con, ?int $userId): array
+{
+    $sqlUsersDataQuery = 'SELECT u.id, u.registration_date, u.email, u.name, u.password
+                           FROM users as u';
+    if (!empty ($userId)) {
+        $sqlUsersDataQuery = $sqlUsersDataQuery . ' WHERE u.id = ?';
+    }
+    $stmt = mysqli_prepare($con, $sqlUsersDataQuery);
+
+    if ($stmt === false) {
+        exit('mysqli_prepare'.mysqli_error($con));
+    }
+    if (!empty ($userId)) {
+        if (!mysqli_stmt_bind_param($stmt, 'i', $userId)) {
+            exit('Ошибка mysqli_bind');
+        }
+    }
+    if (!mysqli_stmt_execute($stmt)) {
+        exit('Ошибка mysqli_execute');
+    }
+    $res = mysqli_stmt_get_result($stmt);
+    if ($res === false) {
+        exit('Ошибка get_result');
+    }
+    $UsersDataQueryResult = mysqli_fetch_all($res, MYSQLI_ASSOC);
+    if (!$UsersDataQueryResult) {
+	    $error = mysqli_error($con);
+	    exit('Ошибка mysqli_fetch' . $error);
+    }
+    return $UsersDataQueryResult;
+}
+
+/**
+ * @param mixed $con
+ * @param integer $userId
+ * @return array
+ */
+function getUserProjects (mixed $con, int $userId): array
 {
     $sqlProjectsQuery = 'SELECT COUNT(t.id), p.title, p.id
                            FROM projects as p
@@ -63,18 +185,18 @@ function getUserProjects (mixed $con, int $userId): mixed
  * @param mixed $con
  * @param integer $userId
  * @param integer $projectId
- * @return mixed
+ * @return array
  */
-function getUserTasks ($con, int $userId, ?int $projectId)
+function getUserTasks ($con, int $userId, ?int $projectId): array
 {
-    $sqlTaskQuery = "SELECT t.name, t.deadline, t.project_id, t.is_finished, t.path_to_file
+    $sqlTaskQuery = 'SELECT t.name, t.deadline, t.project_id, t.is_finished, t.path_to_file
                        FROM tasks as t
                        JOIN projects as p ON p.id = t.project_id
-                      WHERE p.user_id = ?";
+                      WHERE p.user_id = ?';
     if (!empty ($projectId)) {
-        $sqlTaskQuery = $sqlTaskQuery . " AND t.project_id = ?";
+        $sqlTaskQuery = $sqlTaskQuery . ' AND t.project_id = ?';
     }
-    $sqlTaskQuery = $sqlTaskQuery . " ORDER BY t.creation_date DESC";
+    $sqlTaskQuery = $sqlTaskQuery . ' ORDER BY t.creation_date DESC';
 
     $stmt = mysqli_prepare($con, $sqlTaskQuery);
 
@@ -192,6 +314,21 @@ function validateFilled(string $name): ?string
 {
     if (empty($_POST[$name])) {
         return 'Это поле должно быть заполнено';
+    }
+    return null;
+}
+
+/**
+ * @param string $email
+ * @return string
+ */
+function validateEmail(string $email): ?string
+{
+    if (empty($_POST['email'])) {
+        return 'Это поле должно быть заполнено';
+    }
+    if (!filter_input(INPUT_POST, $email, FILTER_VALIDATE_EMAIL)) {
+        return "Введите корректный email";
     }
     return null;
 }
