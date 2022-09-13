@@ -1,9 +1,17 @@
 <?php
+session_start();
 
 require_once 'src/init.php';
 require_once 'src/functions.php';
 
-$userId = 3;
+if (!isset($_SESSION['username'])) {
+    header('Location: /src/guest.php');
+}
+
+$con = getConnection();
+$user = getUsersData($con, $_SESSION['username']);
+
+$userId = $user['id'];
 
 $showCompleteTasks = rand(0, 1);
 
@@ -12,9 +20,42 @@ if (!empty($_GET['projectId'])) {
     $projectId = (int)$_GET['projectId'];
 }
 
-$con = getConnection();
-$projects = getUserProjects($con, $userId);
-$tasks = getUserTasks($con, $userId, $projectId);
+$anyProjects = checkUserProjects($con, $userId);
+
+if (empty($anyProjects )) {
+    $projects = [
+        [
+        'id' => 0,
+        'count' => null,
+        'title' => 'Нет проектов',
+        ],
+    ];
+    $tasks = [
+        [
+        'name' => 'Нет заданий',
+        'deadline' => null,
+        'project_id' => 0,
+        'is_finished' => 0,
+        'path_to_file' => null,
+        ],
+    ];
+} else {
+    $projects = getUserProjects($con, $userId);
+    if (empty ($projects)) {
+        $projects = $anyProjects;
+        $tasks = [
+            [
+            'name' => 'Нет заданий',
+            'deadline' => null,
+            'project_id' => 0,
+            'is_finished' => 0,
+            'path_to_file' => null,
+            ],
+        ];
+    } else {
+        $tasks = getUserTasks($con, $userId, $projectId);
+    }
+}
 
 $pageContent = include_template(
     'main.php', [
@@ -29,7 +70,7 @@ $layoutContent = include_template(
     'layout.php', [
         'content' => $pageContent,
         'title' => 'Дела в порядке',
-        'userName' => 'Юджин'
+        'userName' => $user['name'],
     ]
 );
 

@@ -7,15 +7,13 @@
                 <?php foreach ($projects as $project) : ?>
                     <li class="main-navigation__list-item <?= ($project['id'] == $projectId) ? 'main-navigation__list-item--active' : '' ?>">
                         <a class="main-navigation__list-item-link" href="<?= getProjectUrl($project['id']) ?>"><?= htmlspecialchars($project['title']); ?></a>
-                        <span class="main-navigation__list-item-count"><?= ($project['COUNT(t.id)']) ?></span>
+                        <span class="main-navigation__list-item-count"><?= isset($project['count']) ? ($project['count']) : '0' ?></span>
                     </li>
                 <?php endforeach; ?>
             </ul>
         </nav>
 
         <a class="button button--transparent button--plus content__side-button" href="pages/form-project.html" target="project_add">Добавить проект</a>
-        <p></p>
-        <a class="button button--transparent button--plus content__side-button" href="src/account.php" target="registration">Регистрация</a>
 
     </section>
 
