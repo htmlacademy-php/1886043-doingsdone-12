@@ -1,17 +1,17 @@
 <?php
-session_start();
 
 require_once 'src/init.php';
 require_once 'src/functions.php';
 
-if (!isset($_SESSION['username'])) {
+if (!isset($_SESSION['userEmail'])) {
     header('Location: /src/guest.php');
 }
 
 $con = getConnection();
-$user = getUsersData($con, $_SESSION['username']);
+$user = getUsersData($con, $_SESSION['userEmail']);
 
-$userId = $user['id'];
+$_SESSION['userId'] = $user['id'];
+$_SESSION['userName'] = $user['name'];
 
 $showCompleteTasks = rand(0, 1);
 
@@ -20,7 +20,7 @@ if (!empty($_GET['projectId'])) {
     $projectId = (int)$_GET['projectId'];
 }
 
-$anyProjects = checkUserProjects($con, $userId);
+$anyProjects = checkUserProjects($con, $user['id']);
 
 if (empty($anyProjects )) {
     $projects = [
@@ -40,7 +40,7 @@ if (empty($anyProjects )) {
         ],
     ];
 } else {
-    $projects = getUserProjects($con, $userId);
+    $projects = getUserProjects($con, $user['id']);
     if (empty ($projects)) {
         $projects = $anyProjects;
         $tasks = [
@@ -53,7 +53,7 @@ if (empty($anyProjects )) {
             ],
         ];
     } else {
-        $tasks = getUserTasks($con, $userId, $projectId);
+        $tasks = getUserTasks($con, $user['id'], $projectId);
     }
 }
 
@@ -70,7 +70,6 @@ $layoutContent = include_template(
     'layout.php', [
         'content' => $pageContent,
         'title' => 'Дела в порядке',
-        'userName' => $user['name'],
     ]
 );
 

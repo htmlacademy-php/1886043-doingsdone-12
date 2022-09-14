@@ -1,7 +1,5 @@
 <?php
 
-session_start();
-
 require_once 'init.php';
 require_once 'functions.php';
 
@@ -30,12 +28,12 @@ if ($_SERVER['REQUEST_METHOD']==='POST' && !empty($_POST['submit'])) {
     $checkedUserEmail = checkUsersEmail($con, $_POST['email']);
     if(!$errors['email']) {
         if ($checkedUserEmail===false) {
-            $errors['email'] = 'Вы ввели неверный E-mail';
+            $errors['email'] = 'Неверный логин или пароль';
         } else {
-            $checkedUserPassword = checkUserPassword($con, $_POST['email']);
+            $checkedUserPassword = validateUserPassword($con, $_POST['email']);
             if(!$errors['password']) {
                 if(!password_verify($_POST['password'], $checkedUserPassword)) {
-                    $errors['password'] = 'Вы ввели неверный пароль';
+                    $errors['password'] = 'Неверный логин или пароль';
                 }
             }
         }
@@ -44,7 +42,7 @@ if ($_SERVER['REQUEST_METHOD']==='POST' && !empty($_POST['submit'])) {
     $errors = array_filter($errors);
 
     if (empty($errors)) {
-        $_SESSION['username'] =  $_POST['email'];
+        $_SESSION['userEmail'] =  $_POST['email'];
         header('Location: /index.php');
     };
 }
@@ -54,8 +52,7 @@ $pageContent = include_template('auth.php', ['errors' => $errors,]);
 $layoutContent = include_template(
     'layout.php', [
         'content' => $pageContent,
-        'title' => 'Дела в порядке',
-        'userName' => 'Юджин'
+        'title' => 'Дела в порядке'
     ]
 );
 

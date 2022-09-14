@@ -12,27 +12,27 @@
 
 </head>
 
-<?php $classname = isset($_SESSION['username']) ? " " : "body-background"; ?>
+<?php $classname = isset($_SESSION['userId']) ? " " : "body-background"; ?>
 <body class = <?=$classname;?> >
   <h1 class="visually-hidden">Дела в порядке</h1>
 
   <div class="page-wrapper">
 
-    <div class="container <? isset($_SESSION['username']) ? 'container--with-sidebar' : '' ?>">
+    <div class="container <? isset($_SESSION['userId']) ? 'container--with-sidebar' : '' ?>">
       <header class="main-header">
-        <a href="/">
+        <a href="/index.php">
           <img src="../img/logo.png" width="153" height="42" alt="Логотип Дела в порядке">
         </a>
 
         <div class="main-header__side">
 
-          <?php if (isset($_SESSION['username'])) : ?>
+          <?php if (isset($_SESSION['userId'])) : ?>
 
             <a class="main-header__side-item button button--plus open-modal" href="../src/add.php">Добавить задачу</a>
 
             <div class="main-header__side-item user-menu">
               <div class="user-menu__data">
-                <p><?= $userName; ?></p>
+                <p><?= $_SESSION['userName']; ?></p>
                 <a href="../src/logout.php">Выйти</a>
               </div>
             </div>

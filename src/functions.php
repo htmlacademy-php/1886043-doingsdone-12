@@ -15,12 +15,12 @@ function addNewTask(mixed $con, string $name, int  $projectId, ?string  $deadlin
     $stmt = mysqli_prepare($con, $sqlTaskInsertQuery);
 
     if ($stmt === false) {
-        exit('Ошибка mysqli_prepare addNewTask: '.mysqli_error($con));
+        exit('Ошибка mysqli_prepare в функции addNewTask: '.mysqli_error($con));
     }
     mysqli_stmt_bind_param($stmt, 'siss', $name, $projectId, $deadline, $filePath);
 
     if (!mysqli_stmt_execute($stmt)) {
-        exit('Ошибка mysqli_stmt_execute addNewTask');
+        exit('Ошибка mysqli_stmt_execute в функции addNewTask');
     }
 }
 
@@ -39,12 +39,12 @@ function createNewUser(mixed $con, string $email, string  $password, string  $na
     $stmt = mysqli_prepare($con, $sqlCreateNewUserQuery);
 
         if ($stmt === false) {
-        exit('Ошибка mysqli_prepare createNewUser: '.mysqli_error($con));
+        exit('Ошибка mysqli_prepare в функции createNewUser: '.mysqli_error($con));
     }
     mysqli_stmt_bind_param($stmt, 'sss', $email, $password, $name);
 
     if (!mysqli_stmt_execute($stmt)) {
-        exit('Ошибка mysqli_stmt_execute createNewUser');
+        exit('Ошибка mysqli_stmt_execute в функции createNewUser');
     }
 }
 
@@ -53,30 +53,30 @@ function createNewUser(mixed $con, string $email, string  $password, string  $na
  * @param string $email
  * @return string
  */
-function checkUserPassword (mixed $con, string $email): string
+function validateUserPassword (mixed $con, string $email): string
 {
-    $sqlcheckUserPassword = 'SELECT u.password
+    $sqlValidateUserPassword = 'SELECT u.password
                         FROM users as u
                         WHERE u.email = ?';
 
-    $stmt = mysqli_prepare($con, $sqlcheckUserPassword);
+    $stmt = mysqli_prepare($con, $sqlValidateUserPassword);
 
     if ($stmt === false) {
-        exit('Ошибка mysqli_prepare checkUserPassword'.mysqli_error($con));
+        exit('Ошибка mysqli_prepare в функции validateUserPassword'.mysqli_error($con));
     }
 
     mysqli_stmt_bind_param($stmt, 's', $email);
 
     if (!mysqli_stmt_execute($stmt)) {
-        exit('Ошибка mysqli_execute checkUserPassword');
+        exit('Ошибка mysqli_execute в функции validateUserPassword');
     }
     $res = mysqli_stmt_get_result($stmt);
     if ($res === false) {
-        exit('Ошибка get_result checkUserPassword');
+        exit('Ошибка get_result в функции validateUserPassword');
     }
-    $checkedUserPassword = mysqli_fetch_all($res, MYSQLI_ASSOC);
+    $validatedUserPassword = mysqli_fetch_all($res, MYSQLI_ASSOC);
 
-    return $checkedUserPassword['0']['password'];
+    return $validatedUserPassword['0']['password'];
 }
 
 /**
@@ -93,17 +93,17 @@ function checkUsersEmail (mixed $con, string $email): bool
     $stmt = mysqli_prepare($con, $sqlcheckUsersEmail);
 
     if ($stmt === false) {
-        exit('Ошибка mysqli_prepare checkUsersEmail'.mysqli_error($con));
+        exit('Ошибка mysqli_prepare в функции checkUsersEmail'.mysqli_error($con));
     }
 
     mysqli_stmt_bind_param($stmt, 's', $email);
 
     if (!mysqli_stmt_execute($stmt)) {
-        exit('Ошибка mysqli_execute checkUsersEmail');
+        exit('Ошибка mysqli_execute в функции checkUsersEmail');
     }
     $res = mysqli_stmt_get_result($stmt);
     if ($res === false) {
-        exit('Ошибка get_result checkUsersEmail');
+        exit('Ошибка get_result в функции checkUsersEmail');
     }
     $checkedUsersEmail = mysqli_fetch_all($res, MYSQLI_ASSOC);
 
@@ -122,20 +122,20 @@ function getUsersEmail (mixed $con): array
     $stmt = mysqli_prepare($con, $sqlUsersEmailQuery);
 
     if ($stmt === false) {
-        exit('Ошибка mysqli_prepare getUsersEmail'.mysqli_error($con));
+        exit('Ошибка mysqli_prepare в функции getUsersEmail'.mysqli_error($con));
     }
 
     if (!mysqli_stmt_execute($stmt)) {
-        exit('Ошибка mysqli_execute getUsersEmail');
+        exit('Ошибка mysqli_execute в функции getUsersEmail');
     }
     $res = mysqli_stmt_get_result($stmt);
     if ($res === false) {
-        exit('Ошибка get_result getUsersEmail');
+        exit('Ошибка get_result в функции getUsersEmail');
     }
     $usersEmailQueryResult = mysqli_fetch_all($res, MYSQLI_ASSOC);
     if (!$usersEmailQueryResult) {
 	    $error = mysqli_error($con);
-	    exit('Ошибка mysqli_fetch getUsersEmail' . $error);
+	    exit('Ошибка mysqli_fetch в функции getUsersEmail' . $error);
     }
     return $usersEmailQueryResult;
 }
@@ -155,24 +155,24 @@ function getUsersData (mixed $con, string $email): array
     $stmt = mysqli_prepare($con, $sqlUsersDataQuery);
 
     if ($stmt === false) {
-        exit('Ошибка mysqli_prepare getUsersData'.mysqli_error($con));
+        exit('Ошибка mysqli_prepare в функции getUsersData'.mysqli_error($con));
     }
     if (!empty ($email)) {
         if (!mysqli_stmt_bind_param($stmt, 's', $email)) {
-            exit('Ошибка mysqli_bind getUsersData');
+            exit('Ошибка mysqli_bind в функции getUsersData');
         }
     }
     if (!mysqli_stmt_execute($stmt)) {
-        exit('Ошибка mysqli_execute getUsersData');
+        exit('Ошибка mysqli_execute в функции getUsersData');
     }
     $res = mysqli_stmt_get_result($stmt);
     if ($res === false) {
-        exit('Ошибка get_result getUsersData');
+        exit('Ошибка get_result в функции getUsersData');
     }
     $UsersDataQueryResult = mysqli_fetch_all($res, MYSQLI_ASSOC);
     if (!$UsersDataQueryResult) {
 	    $error = mysqli_error($con);
-	    exit('Ошибка mysqli_fetch getUsersData' . $error);
+	    exit('Ошибка mysqli_fetch в функции getUsersData' . $error);
     }
     return $UsersDataQueryResult[0];
 }

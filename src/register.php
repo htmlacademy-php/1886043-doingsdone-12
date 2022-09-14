@@ -3,8 +3,6 @@
 require_once 'init.php';
 require_once 'functions.php';
 
-$userId;
-
 $con = getConnection();
 
 $errors = [];
@@ -51,8 +49,8 @@ $pageContent = include_template('register.php', ['errors' => $errors,]);
 $layoutContent = include_template(
     'layout.php', [
         'content' => $pageContent,
-        'title' => 'Дела в порядке',
-        'userName' => 'Юджин'
+        'title' => 'Дела в порядке'
+
     ]
 );
 
