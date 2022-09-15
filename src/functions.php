@@ -112,55 +112,54 @@ function checkUsersEmail (mixed $con, string $email): bool
 
 /**
  * @param mixed $con
+ * @param string $email
  * @return array
  */
-function getUsersEmail (mixed $con): array
+function getUsersDataOnEmail (mixed $con, string $email): array
 {
-    $sqlUsersEmailQuery = 'SELECT u.email
-                        FROM users as u';
-
-    $stmt = mysqli_prepare($con, $sqlUsersEmailQuery);
+    $sqlgetUsersDataOnEmail = 'SELECT id, email, password
+                                 FROM users
+                                WHERE email = ?';
+    $stmt = mysqli_prepare($con, $sqlgetUsersDataOnEmail);
 
     if ($stmt === false) {
-        exit('Ошибка mysqli_prepare в функции getUsersEmail'.mysqli_error($con));
+        exit('Ошибка mysqli_prepare в функции getUsersDataOnEmail'.mysqli_error($con));
     }
-
+    if (!mysqli_stmt_bind_param($stmt, 's', $email)) {
+        exit('Ошибка mysqli_bind в функции getUsersDataOnEmail');
+    }
     if (!mysqli_stmt_execute($stmt)) {
-        exit('Ошибка mysqli_execute в функции getUsersEmail');
+        exit('Ошибка mysqli_execute в функции getUsersDataOnEmail');
     }
     $res = mysqli_stmt_get_result($stmt);
     if ($res === false) {
-        exit('Ошибка get_result в функции getUsersEmail');
+        exit('Ошибка get_result в функции getUsersDataOnEmail');
     }
-    $usersEmailQueryResult = mysqli_fetch_all($res, MYSQLI_ASSOC);
-    if (!$usersEmailQueryResult) {
+    $getUsersDataOnEmailResult = mysqli_fetch_all($res, MYSQLI_ASSOC);
+    if (!$getUsersDataOnEmailResult) {
 	    $error = mysqli_error($con);
-	    exit('Ошибка mysqli_fetch в функции getUsersEmail' . $error);
+	    exit('Ошибка mysqli_fetch в функции getUsersDataOnEmail' . $error);
     }
-    return $usersEmailQueryResult;
+    return $getUsersDataOnEmailResult[0];
 }
 
 /**
  * @param mixed $con
- * @param string $email
+ * @param int $id
  * @return array
  */
-function getUsersData (mixed $con, string $email): array
+function getUsersData (mixed $con, int $id): array
 {
     $sqlUsersDataQuery = 'SELECT id, registration_date, email, name, password
-                           FROM users';
-    if (!empty ($email)) {
-        $sqlUsersDataQuery = $sqlUsersDataQuery . ' WHERE email = ?';
-    }
+                           FROM users
+                          WHERE id = ?';
     $stmt = mysqli_prepare($con, $sqlUsersDataQuery);
 
     if ($stmt === false) {
         exit('Ошибка mysqli_prepare в функции getUsersData'.mysqli_error($con));
     }
-    if (!empty ($email)) {
-        if (!mysqli_stmt_bind_param($stmt, 's', $email)) {
-            exit('Ошибка mysqli_bind в функции getUsersData');
-        }
+    if (!mysqli_stmt_bind_param($stmt, 'i', $id)) {
+        exit('Ошибка mysqli_bind в функции getUsersData');
     }
     if (!mysqli_stmt_execute($stmt)) {
         exit('Ошибка mysqli_execute в функции getUsersData');
@@ -182,7 +181,7 @@ function getUsersData (mixed $con, string $email): array
  * @param integer $userId
  * @return array
  */
-function checkUserProjects(mixed $con, int $userId): array
+function getUserProjects(mixed $con, int $userId): array
 {
 $sqlCheckUserProjects = 'SELECT id, title
                            FROM projects
@@ -209,20 +208,22 @@ return $checkUserProjectsQueryResult;
 
 /**
  * @param mixed $con
- * @param integer $projectId
- * @return array
+ * @param int $userId
+ * @return bool
  */
-function checkUserTasks(mixed $con, ?int $projectId): array
+function checkUserTasks(mixed $con, int $userId): bool
 {
-$sqlCheckUserTasks = 'SELECT name, deadline, project_id, is_finished, path_to_file
-                               FROM tasks
-                              WHERE project_id = ?';
+$sqlCheckUserTasks = 'SELECT COUNT(t.id) as count, p.id
+                           FROM projects as p
+                           JOIN tasks as t ON p.id = t.project_id
+                          WHERE p.user_id = ?
+                       GROUP BY p.id';
 $stmt = mysqli_prepare($con, $sqlCheckUserTasks);
 
 if ($stmt === false) {
 exit('Ошибка mysqli_prepare в функции checkUserTasks'.mysqli_error($con));
 }
-if (!mysqli_stmt_bind_param($stmt, 'i', $projectId)) {
+if (!mysqli_stmt_bind_param($stmt, 'i', $userId)) {
 exit('Ошибка mysqli_bind в функции checkUserTasks');
 }
 if (!mysqli_stmt_execute($stmt)) {
@@ -234,7 +235,7 @@ exit('Ошибка get_result в функции checkUserTasks');
 }
 $checkUserTasksQueryResult = mysqli_fetch_all($res, MYSQLI_ASSOC);
 
-return $checkUserTasksQueryResult;
+return empty($checkUserTasksQueryResult) ? false : true;
 };
 
 /**
@@ -242,7 +243,7 @@ return $checkUserTasksQueryResult;
  * @param integer $userId
  * @return array
  */
-function getUserProjects (mixed $con, int $userId): ?array
+function getUserProjectsWithTasksQuantities (mixed $con, int $userId): ?array
 {
     $sqlProjectsQuery = 'SELECT COUNT(t.id) as count, p.title, p.id
                            FROM projects as p

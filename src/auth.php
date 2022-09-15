@@ -25,14 +25,13 @@ if ($_SERVER['REQUEST_METHOD']==='POST' && !empty($_POST['submit'])) {
         }
     }
 
-    $checkedUserEmail = checkUsersEmail($con, $_POST['email']);
     if(!$errors['email']) {
-        if ($checkedUserEmail===false) {
+        $userData = getUsersDataOnEmail ( $con, $_POST['email']);
+        if (empty($userData)) {
             $errors['email'] = 'Неверный логин или пароль';
         } else {
-            $checkedUserPassword = validateUserPassword($con, $_POST['email']);
             if(!$errors['password']) {
-                if(!password_verify($_POST['password'], $checkedUserPassword)) {
+                if(!password_verify($_POST['password'], $userData['password'])) {
                     $errors['password'] = 'Неверный логин или пароль';
                 }
             }
@@ -42,7 +41,10 @@ if ($_SERVER['REQUEST_METHOD']==='POST' && !empty($_POST['submit'])) {
     $errors = array_filter($errors);
 
     if (empty($errors)) {
-        $_SESSION['userEmail'] =  $_POST['email'];
+        $user = getUsersData($con, $userData['id']);
+        $_SESSION['userId'] =  $user['id'];
+        $_SESSION['userName'] =  $user['name'];
+        $_SESSION['userEmail'] =  $user['email'];
         header('Location: /index.php');
     };
 }
@@ -57,3 +59,4 @@ $layoutContent = include_template(
 );
 
 print($layoutContent);
+

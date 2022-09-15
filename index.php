@@ -8,19 +8,16 @@ if (!isset($_SESSION['userEmail'])) {
 }
 
 $con = getConnection();
-$user = getUsersData($con, $_SESSION['userEmail']);
-
-$_SESSION['userId'] = $user['id'];
-$_SESSION['userName'] = $user['name'];
 
 $showCompleteTasks = rand(0, 1);
 
 $projectId = null;
+
 if (!empty($_GET['projectId'])) {
     $projectId = (int)$_GET['projectId'];
 }
 
-$anyProjects = checkUserProjects($con, $user['id']);
+$anyProjects = getUserProjects($con, $_SESSION['userId']);
 
 if (empty($anyProjects )) {
     $projects = [
@@ -40,8 +37,7 @@ if (empty($anyProjects )) {
         ],
     ];
 } else {
-    $projects = getUserProjects($con, $user['id']);
-    if (empty ($projects)) {
+    if (!checkUserTasks($con, $_SESSION['userId'])) {
         $projects = $anyProjects;
         $tasks = [
             [
@@ -53,7 +49,8 @@ if (empty($anyProjects )) {
             ],
         ];
     } else {
-        $tasks = getUserTasks($con, $user['id'], $projectId);
+        $projects = getUserProjectsWithTasksQuantities($con, $_SESSION['userId']);
+        $tasks = getUserTasks($con, $_SESSION['userId'], $projectId);
     }
 }
 

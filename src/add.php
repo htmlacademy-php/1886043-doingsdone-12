@@ -3,12 +3,11 @@
 require_once 'init.php';
 require_once 'functions.php';
 
-if (!isset($_SESSION['userEmail'])) {
+if (!isset($_SESSION['userId'])) {
     header('Location: /src/guest.php');
 }
 
 $con = getConnection();
-$user = getUsersData($con, $_SESSION['userEmail']);
 
 $showCompleteTasks = rand(0, 1);
 
@@ -18,8 +17,8 @@ if (!empty($_GET['projectId'])) {
     $projectId = (int)$_GET['projectId'];
 }
 
-$projects = getUserProjects($con, $user['id']);
-$tasks = getUserTasks($con, $user['id'], $projectId);
+$projects = getUserProjectsWithTasksQuantities($con, $_SESSION['userId']);
+$tasks = getUserTasks($con, $_SESSION['userId'], $projectId);
 
 $errors = [];
 
