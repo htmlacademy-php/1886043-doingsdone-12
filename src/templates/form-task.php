@@ -7,7 +7,7 @@
             <?php foreach ($projects as $project) : ?>
                 <li class="main-navigation__list-item <?= ($project['id'] == $projectId) ? 'main-navigation__list-item--active' : '' ?>">
                     <a class="main-navigation__list-item-link" href="<?= getProjectUrl($project['id']) ?>"><?= htmlspecialchars($project['title']); ?></a>
-                    <span class="main-navigation__list-item-count"><?= ($project['COUNT(t.id)']) ?></span>
+                    <span class="main-navigation__list-item-count"><?= ($project['count']) ?></span>
                 </li>
             <?php endforeach; ?>
         </ul>

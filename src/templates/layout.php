@@ -2,35 +2,50 @@
 <html lang="ru">
 
 <head>
-    <meta charset="UTF-8">
-    <title><?= $title; ?></title>
-    <link rel="stylesheet" href="../css/normalize.css">
-    <link rel="stylesheet" href="../css/style.css">
-    <link rel="stylesheet" href="../css/flatpickr.min.css">
+  <meta charset="UTF-8">
+  <title><?= $title; ?></title>
+  <link rel="stylesheet" href="../css/normalize.css">
+  <link rel="stylesheet" href="../css/style.css">
+  <link rel="stylesheet" href="../css/flatpickr.min.css">
+
+  <?php session_start() ?>
+
 </head>
 
-<body>
-    <h1 class="visually-hidden">Дела в порядке</h1>
+<?php $classname = isset($_SESSION['userId']) ? " " : "body-background"; ?>
+<body class = <?=$classname;?> >
+  <h1 class="visually-hidden">Дела в порядке</h1>
 
-    <div class="page-wrapper">
-        <div class="container container--with-sidebar">
-            <header class="main-header">
-                <a href="/">
-                    <img src="../img/logo.png" width="153" height="42" alt="Логотип Дела в порядке">
-                </a>
+  <div class="page-wrapper">
 
-                <div class="main-header__side">
-                    <a class="main-header__side-item button button--plus open-modal" href="../src/add.php">Добавить задачу</a>
+    <div class="container <? isset($_SESSION['userId']) ? 'container--with-sidebar' : '' ?>">
+      <header class="main-header">
+        <a href="/index.php">
+          <img src="../img/logo.png" width="153" height="42" alt="Логотип Дела в порядке">
+        </a>
 
-                    <div class="main-header__side-item user-menu">
-                        <div class="user-menu__data">
-                            <p><?= $userName; ?></p>
+        <div class="main-header__side">
 
-                            <a href="#">Выйти</a>
-                        </div>
-                    </div>
-                </div>
-            </header>
+          <?php if (isset($_SESSION['userId'])) : ?>
+
+            <a class="main-header__side-item button button--plus open-modal" href="../src/add.php">Добавить задачу</a>
+
+            <div class="main-header__side-item user-menu">
+              <div class="user-menu__data">
+                <p><?= $_SESSION['userName']; ?></p>
+                <a href="../src/logout.php">Выйти</a>
+              </div>
+            </div>
+
+          <?php else : ?>
+
+            <div class="main-header__side">
+              <a class="main-header__side-item button button--transparent" href="../src/auth.php">Войти</a>
+            </div>
+
+          <?php endif ?>
+        </div>
+      </header>
 
             <?= $content; ?>
         </div>

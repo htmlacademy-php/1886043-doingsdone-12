@@ -3,17 +3,22 @@
 require_once 'init.php';
 require_once 'functions.php';
 
-$userId = 3;
+if (!isset($_SESSION['userId'])) {
+    header('Location: /src/guest.php');
+}
+
+$con = getConnection();
+
 $showCompleteTasks = rand(0, 1);
+
 $projectId = null;
 
 if (!empty($_GET['projectId'])) {
     $projectId = (int)$_GET['projectId'];
 }
 
-$con = getConnection();
-$projects = getUserProjects($con, $userId);
-$tasks = getUserTasks($con, $userId, $projectId);
+$projects = getUserProjectsWithTasksQuantities($con, $_SESSION['userId']);
+$tasks = getUserTasks($con, $_SESSION['userId'], $projectId);
 
 $errors = [];
 
@@ -71,7 +76,6 @@ $layoutContent = include_template(
     'layout.php', [
         'content' => $pageContent,
         'title' => 'Дела в порядке',
-        'userName' => 'Юджин'
     ]
 );
 

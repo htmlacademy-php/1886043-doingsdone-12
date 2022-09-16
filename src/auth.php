@@ -3,8 +3,6 @@
 require_once 'init.php';
 require_once 'functions.php';
 
-$userId;
-
 $con = getConnection();
 
 $errors = [];
@@ -17,9 +15,6 @@ if ($_SERVER['REQUEST_METHOD']==='POST' && !empty($_POST['submit'])) {
         },
         'password' => function () {
             return validateFilled('password');
-        },
-        'name' => function() {
-            return validateFilled('name');
         }
     ];
 
@@ -30,30 +25,38 @@ if ($_SERVER['REQUEST_METHOD']==='POST' && !empty($_POST['submit'])) {
         }
     }
 
-    $checkedUsersEmail = checkUsersEmail($con, $_POST['email']);
     if(!$errors['email']) {
-        if ($checkedUsersEmail===true) {
-            $errors['email'] = 'Указанный email уже используеться';
+        $userData = getUsersDataOnEmail ( $con, $_POST['email']);
+        if (empty($userData)) {
+            $errors['email'] = 'Неверный логин или пароль';
+        } else {
+            if(!$errors['password']) {
+                if(!password_verify($_POST['password'], $userData['password'])) {
+                    $errors['password'] = 'Неверный логин или пароль';
+                }
+            }
         }
     };
 
     $errors = array_filter($errors);
 
     if (empty($errors)) {
-        $passwordHash = password_hash($_POST['password'], PASSWORD_DEFAULT);
-        createNewUser($con, $_POST['email'], $passwordHash, $_POST['name']);
+        $user = getUsersData($con, $userData['id']);
+        $_SESSION['userId'] =  $user['id'];
+        $_SESSION['userName'] =  $user['name'];
+        $_SESSION['userEmail'] =  $user['email'];
         header('Location: /index.php');
     };
 }
 
-$pageContent = include_template('register.php', ['errors' => $errors,]);
+$pageContent = include_template('auth.php', ['errors' => $errors,]);
 
 $layoutContent = include_template(
     'layout.php', [
         'content' => $pageContent,
-        'title' => 'Дела в порядке',
-        'userName' => 'Юджин'
+        'title' => 'Дела в порядке'
     ]
 );
 
 print($layoutContent);
+
