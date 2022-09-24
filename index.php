@@ -50,7 +50,24 @@ if (empty($anyProjects )) {
         ];
     } else {
         $projects = getUserProjectsWithTasksQuantities($con, $_SESSION['userId']);
-        $tasks = getUserTasks($con, $_SESSION['userId'], $projectId);
+        if (!empty($_GET['searchTaskName'])) {
+            $_GET['searchTaskName'] = trim($_GET['searchTaskName']);
+            var_dump($_GET);
+            var_dump($_SESSION);
+            var_dump($_GET['searchTaskName']);
+            $tasks = searchUserTasks($con, $_SESSION['userId'], $_GET['searchTaskName']);
+            var_dump($tasks);
+            if (empty($tasks)) {
+                $tasks[0]['name'] = 'Ничего не найдено по Вашему запросу';
+                $tasks[0]['deadline'] = null;
+                $tasks[0]['project_id'] = null;
+                $tasks[0]['is_finished'] = 0;
+                $tasks[0]['path_to_file'] = null;
+            }
+        } else {
+            $tasks = getUserTasks($con, $_SESSION['userId'], $projectId);
+        }
+
     }
 }
 
