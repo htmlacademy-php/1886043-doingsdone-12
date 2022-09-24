@@ -52,11 +52,7 @@ if (empty($anyProjects )) {
         $projects = getUserProjectsWithTasksQuantities($con, $_SESSION['userId']);
         if (!empty($_GET['searchTaskName'])) {
             $_GET['searchTaskName'] = trim($_GET['searchTaskName']);
-            var_dump($_GET);
-            var_dump($_SESSION);
-            var_dump($_GET['searchTaskName']);
             $tasks = searchUserTasks($con, $_SESSION['userId'], $_GET['searchTaskName']);
-            var_dump($tasks);
             if (empty($tasks)) {
                 $tasks[0]['name'] = 'Ничего не найдено по Вашему запросу';
                 $tasks[0]['deadline'] = null;

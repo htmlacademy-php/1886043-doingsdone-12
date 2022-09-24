@@ -48,9 +48,6 @@ if ($_SERVER['REQUEST_METHOD']==='POST' && !empty($_POST['submit'])) {
     }
     $errors = array_filter($errors);
 
-    var_dump($_POST['project_name']);
-    var_dump($_SESSION['userId']);
-
     if (empty($errors)) {
         addNewProject($con, $_POST['project_name'], $_SESSION['userId']);
         header('Location: /index.php');
