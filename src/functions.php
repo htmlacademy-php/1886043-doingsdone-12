@@ -1,10 +1,5 @@
 <?php
 
-
-/*
-MATCH(title,description) AGAINST("слово")'
-*/
-
 /**
  * @param mixed $con
  * @param int $userId
