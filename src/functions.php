@@ -2,10 +2,71 @@
 
 /**
  * @param mixed $con
+ * @param int $userId
+ * @param string $searchTaskName
+ * @return array
+ */
+function searchUserTasks(mixed $con, int $userId, string $seachTaskName): array
+{
+    $sqlSearchUserTasksQuery = 'SELECT t.name, t.deadline, t.project_id, t.is_finished, t.path_to_file
+                                  FROM tasks as t
+                                  JOIN projects as p ON p.id = t.project_id
+                                 WHERE p.user_id = ?
+                                   AND MATCH t.name AGAINST (?)
+                              ORDER BY t.creation_date DESC';
+
+$stmt = mysqli_prepare($con, $sqlSearchUserTasksQuery);
+
+if ($stmt === false) {
+exit('Ошибка mysqli_prepare'.mysqli_error($con));
+}
+
+if (!mysqli_stmt_bind_param($stmt, 'is', $userId, $seachTaskName,)) {
+exit('Ошибка stmt_bind 1');
+}
+
+if (!mysqli_stmt_execute($stmt)) {
+exit('Ошибка stmt_execute');
+}
+$res = mysqli_stmt_get_result($stmt);
+if ($res === false) {
+exit('Ошибка stmt_get_result');
+}
+$foundTasks = mysqli_fetch_all($res, MYSQLI_ASSOC);
+
+return $foundTasks;
+
+}
+
+/**
+ * @param mixed $con
+ * @param string $title
+ * @param int $userId
+ * @return void
+ */
+function addNewProject(mixed $con, string $title, int $userId): void
+{
+    $sqlAddNewProjecQuery = 'INSERT INTO projects
+                              SET title = ?, user_id = ?';
+    $stmt = mysqli_prepare($con, $sqlAddNewProjecQuery);
+
+    if ($stmt === false) {
+        exit('Ошибка mysqli_prepare в функции addNewProject: '.mysqli_error($con));
+    }
+    mysqli_stmt_bind_param($stmt, 'si', $title, $userId);
+
+    if (!mysqli_stmt_execute($stmt)) {
+        exit('Ошибка mysqli_stmt_execute в функции addNewProject');
+    }
+}
+
+/**
+ * @param mixed $con
  * @param string $name
  * @param integer $projectId
  * @param string $deadline
  * @param string  $filePath
+ * @return void
  */
 function addNewTask(mixed $con, string $name, int  $projectId, ?string  $deadline, ?string  $filePath): void
 {
@@ -29,6 +90,7 @@ function addNewTask(mixed $con, string $name, int  $projectId, ?string  $deadlin
  * @param string $name
  * @param string $email
  * @param string $password
+ * @return void
  */
 function createNewUser(mixed $con, string $email, string  $password, string  $name): void
 {
@@ -183,27 +245,27 @@ function getUsersData (mixed $con, int $id): array
  */
 function getUserProjects(mixed $con, int $userId): array
 {
-$sqlCheckUserProjects = 'SELECT id, title
-                           FROM projects
-                          WHERE user_id = ?';
-$stmt = mysqli_prepare($con, $sqlCheckUserProjects);
+    $sqlCheckUserProjects = 'SELECT id, title
+                               FROM projects
+                              WHERE user_id = ?';
+    $stmt = mysqli_prepare($con, $sqlCheckUserProjects);
 
-if ($stmt === false) {
-exit('Ошибка mysqli_prepare в функции checkUserProjects'.mysqli_error($con));
-}
-if (!mysqli_stmt_bind_param($stmt, 'i', $userId)) {
-exit('Ошибка mysqli_bind в функции checkUserProjects');
-}
-if (!mysqli_stmt_execute($stmt)) {
-exit('Ошибка mysqli_execute в функции checkUserProjects');
-}
-$res = mysqli_stmt_get_result($stmt);
-if ($res === false) {
-exit('Ошибка get_result в функции checkUserProjects');
-}
-$checkUserProjectsQueryResult = mysqli_fetch_all($res, MYSQLI_ASSOC);
+    if ($stmt === false) {
+      exit('Ошибка mysqli_prepare в функции checkUserProjects'.mysqli_error($con));
+    }
+    if (!mysqli_stmt_bind_param($stmt, 'i', $userId)) {
+        exit('Ошибка mysqli_bind в функции checkUserProjects');
+    }
+    if (!mysqli_stmt_execute($stmt)) {
+        exit('Ошибка mysqli_execute в функции checkUserProjects');
+    }
+    $res = mysqli_stmt_get_result($stmt);
+    if ($res === false) {
+        exit('Ошибка get_result в функции checkUserProjects');
+    }
+    $checkUserProjectsQueryResult = mysqli_fetch_all($res, MYSQLI_ASSOC);
 
-return $checkUserProjectsQueryResult;
+    return $checkUserProjectsQueryResult;
 };
 
 /**
@@ -213,29 +275,29 @@ return $checkUserProjectsQueryResult;
  */
 function checkUserTasks(mixed $con, int $userId): bool
 {
-$sqlCheckUserTasks = 'SELECT COUNT(t.id) as count, p.id
-                           FROM projects as p
-                           JOIN tasks as t ON p.id = t.project_id
-                          WHERE p.user_id = ?
-                       GROUP BY p.id';
-$stmt = mysqli_prepare($con, $sqlCheckUserTasks);
+    $sqlCheckUserTasks = 'SELECT COUNT(t.id) as count, p.id
+                            FROM projects as p
+                            JOIN tasks as t ON p.id = t.project_id
+                           WHERE p.user_id = ?
+                        GROUP BY p.id';
+    $stmt = mysqli_prepare($con, $sqlCheckUserTasks);
 
-if ($stmt === false) {
-exit('Ошибка mysqli_prepare в функции checkUserTasks'.mysqli_error($con));
-}
-if (!mysqli_stmt_bind_param($stmt, 'i', $userId)) {
-exit('Ошибка mysqli_bind в функции checkUserTasks');
-}
-if (!mysqli_stmt_execute($stmt)) {
-exit('Ошибка mysqli_execute в функции checkUserTasks');
-}
-$res = mysqli_stmt_get_result($stmt);
-if ($res === false) {
-exit('Ошибка get_result в функции checkUserTasks');
-}
-$checkUserTasksQueryResult = mysqli_fetch_all($res, MYSQLI_ASSOC);
+    if ($stmt === false) {
+        exit('Ошибка mysqli_prepare в функции checkUserTasks'.mysqli_error($con));
+    }
+    if (!mysqli_stmt_bind_param($stmt, 'i', $userId)) {
+        exit('Ошибка mysqli_bind в функции checkUserTasks');
+    }
+    if (!mysqli_stmt_execute($stmt)) {
+        exit('Ошибка mysqli_execute в функции checkUserTasks');
+    }
+    $res = mysqli_stmt_get_result($stmt);
+    if ($res === false) {
+        exit('Ошибка get_result в функции checkUserTasks');
+    }
+    $checkUserTasksQueryResult = mysqli_fetch_all($res, MYSQLI_ASSOC);
 
-return empty($checkUserTasksQueryResult) ? false : true;
+    return empty($checkUserTasksQueryResult) ? false : true;
 };
 
 /**

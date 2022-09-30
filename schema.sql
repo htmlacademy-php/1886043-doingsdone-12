@@ -58,6 +58,7 @@ CREATE TABLE IF NOT EXISTS `tasks` (
   `path_to_file` VARCHAR(80) NULL,
   PRIMARY KEY (`id`),
   UNIQUE INDEX `task_id_UNIQUE` (`id` ASC),
+  FULLTEXT KEY (`name`),
   INDEX `projects_id_idx` (`project_id` ASC),
   CONSTRAINT `projects_id`
     FOREIGN KEY (`project_id`)
