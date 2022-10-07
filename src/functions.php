@@ -2,6 +2,84 @@
 
 /**
  * @param mixed $con
+ * @param integer $userId
+ * @param integer $projectId
+ * @param string $deadline
+ * @return array
+ */
+function getUserTasksInTimeInterval ($con, int $userId, string $deadline, ?int $projectId): array
+{
+    switch ($deadline) {
+        case 'today':
+            $today = date('Y-m-d');
+            $sqlTaskQuery = 'SELECT t.id, t.name, t.deadline, t.project_id, t.is_finished, t.path_to_file
+                               FROM tasks as t
+                               JOIN projects as p ON p.id = t.project_id
+                              WHERE t.deadline = "'.$today.'" AND p.user_id = ?';
+            break;
+        case 'tomorrow':
+            $tomorrow = (new DateTime('1 days'))->format('Y-m-d');
+            $sqlTaskQuery = 'SELECT t.id, t.name, t.deadline, t.project_id, t.is_finished, t.path_to_file
+                               FROM tasks as t
+                               JOIN projects as p ON p.id = t.project_id
+                              WHERE t.deadline = "'.$tomorrow.'" AND p.user_id = ?';
+            break;
+        case 'yesterday':
+            $today = date('Y-m-d');
+            $sqlTaskQuery = 'SELECT t.id, t.name, t.deadline, t.project_id, t.is_finished, t.path_to_file
+                               FROM tasks as t
+                               JOIN projects as p ON p.id = t.project_id
+                              WHERE t.deadline < "'.$today.'" AND p.user_id = ?';
+            break;
+        case 'withoutTimeLimits':
+            $sqlTaskQuery = 'SELECT t.id, t.name, t.deadline, t.project_id, t.is_finished, t.path_to_file
+                               FROM tasks as t
+                               JOIN projects as p ON p.id = t.project_id
+                              WHERE p.user_id = ?';
+            break;
+    }
+
+    if (!empty ($projectId)) {
+        $sqlTaskQuery = $sqlTaskQuery . ' AND t.project_id = ?';
+    }
+    $sqlTaskQuery = $sqlTaskQuery . ' ORDER BY t.creation_date DESC';
+
+    $stmt = mysqli_prepare($con, $sqlTaskQuery);
+
+    if ($stmt === false) {
+        exit('Ошибка mysqli_prepare'.mysqli_error($con));
+    }
+    if (!empty ($projectId)) {
+        if (!mysqli_stmt_bind_param($stmt, 'ii', $userId, $projectId)) {
+          exit('Ошибка stmt_bind 1');
+        }
+    }else{
+        if (!mysqli_stmt_bind_param($stmt, 'i', $userId)) {
+            exit('Ошибка stmt_bind 2');
+        }
+    }
+    if (!mysqli_stmt_execute($stmt)) {
+        exit('Ошибка stmt_execute');
+    }
+    $res = mysqli_stmt_get_result($stmt);
+    if ($res === false) {
+        exit('Ошибка stmt_get_result');
+    }
+    $tasks = mysqli_fetch_all($res, MYSQLI_ASSOC);
+    if (isset($tasks)) {
+        foreach ($tasks as $task) {
+            if ($task['is_finished'] === '0') {
+                $task['is_finished'] = false;
+            } else {
+                $task['is_finished'] = true;
+            }
+        }
+    }
+    return $tasks;
+}
+
+/**
+ * @param mixed $con
  * @param int $userId
  * @param string $searchTaskName
  * @return array
@@ -333,58 +411,6 @@ function getUserProjectsWithTasksQuantities (mixed $con, int $userId): ?array
 }
 
 /**
- * @param mixed $con
- * @param integer $userId
- * @param integer $projectId
- * @return array
- */
-function getUserTasks ($con, int $userId, ?int $projectId): array
-{
-    $sqlTaskQuery = 'SELECT t.name, t.deadline, t.project_id, t.is_finished, t.path_to_file
-                       FROM tasks as t
-                       JOIN projects as p ON p.id = t.project_id
-                      WHERE p.user_id = ?';
-    if (!empty ($projectId)) {
-        $sqlTaskQuery = $sqlTaskQuery . ' AND t.project_id = ?';
-    }
-    $sqlTaskQuery = $sqlTaskQuery . ' ORDER BY t.creation_date DESC';
-
-    $stmt = mysqli_prepare($con, $sqlTaskQuery);
-
-    if ($stmt === false) {
-        exit('Ошибка mysqli_prepare'.mysqli_error($con));
-    }
-    if (!empty ($projectId)) {
-        if (!mysqli_stmt_bind_param($stmt, 'ii', $userId, $projectId)) {
-          exit('Ошибка stmt_bind 1');
-        }
-    }else{
-        if (!mysqli_stmt_bind_param($stmt, 'i', $userId)) {
-            exit('Ошибка stmt_bind 2');
-        }
-    }
-    if (!mysqli_stmt_execute($stmt)) {
-        exit('Ошибка stmt_execute');
-    }
-    $res = mysqli_stmt_get_result($stmt);
-    if ($res === false) {
-        exit('Ошибка stmt_get_result');
-    }
-    $tasks = mysqli_fetch_all($res, MYSQLI_ASSOC);
-    if (isset($tasks)) {
-        foreach ($tasks as $task) {
-            if ($task['is_finished'] === '0') {
-                $task['is_finished'] = false;
-            } else {
-                $task['is_finished'] = true;
-            }
-        }
-    }
-    return $tasks;
-}
-
-
-/**
  * @param string $taskFinishDate
  * @return int
  */
@@ -445,6 +471,23 @@ function getProjectUrl(int $projectId): string
     $url = '/' . $scriptname . '?' . $query;
     return $url;
 }
+
+/**
+ * @param string $deadline
+ * @param int $showCompleteTasks
+ * @return string
+ */
+function getDeadlineUrl(string $deadline, int $showCompleteTasks): string
+{
+    $params['deadline'] = $deadline;
+    $scriptname = 'index.php';
+    $url = '/' . $scriptname . '?' . 'deadline='. $deadline;
+    if ($showCompleteTasks===1) {
+        $url = $url.'&show_completed=1';
+    }
+    return $url;
+}
+
 
 /**
  * @param string $name

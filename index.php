@@ -9,7 +9,7 @@ if (!isset($_SESSION['userEmail'])) {
 
 $con = getConnection();
 
-$showCompleteTasks = rand(0, 1);
+$showCompleteTasks = isset($_GET['show_completed']) ? (int)$_GET['show_completed'] : 0;
 
 $projectId = null;
 
@@ -60,8 +60,10 @@ if (empty($anyProjects )) {
                 $tasks[0]['is_finished'] = 0;
                 $tasks[0]['path_to_file'] = null;
             }
-        } else {
-            $tasks = getUserTasks($con, $_SESSION['userId'], $projectId);
+        } elseif (isset($_GET['deadline'])) {
+            $tasks = getUserTasksInTimeInterval($con, $_SESSION['userId'], $_GET['deadline'], $projectId);
+        }else{
+            $tasks = getUserTasksInTimeInterval($con, $_SESSION['userId'], 'withoutTimeLimits', $projectId);
         }
 
     }

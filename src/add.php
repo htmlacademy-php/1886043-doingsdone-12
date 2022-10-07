@@ -18,7 +18,7 @@ if (!empty($_GET['projectId'])) {
 }
 
 $projects = getUserProjectsWithTasksQuantities($con, $_SESSION['userId']);
-$tasks = getUserTasks($con, $_SESSION['userId'], $projectId);
+$tasks = getUserTasksInTimeInterval($con, $_SESSION['userId'], 'withoutTimeLimits', $projectId);
 
 $errors = [];
 
