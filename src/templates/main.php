@@ -45,15 +45,17 @@
         </div>
 
         <table class="tasks">
+            <?php $checked = 'checked'; ?>
             <?php foreach ($tasks as $currentTask) : ?>
                 <?php if (($currentTask['is_finished']) && ($showCompleteTasks === 0)) : ?>
                     <?php continue ?>
                 <?php else : ?>
                     <tr class="tasks__item task <?= ($currentTask['is_finished']) ? "task--completed" : less24hours($currentTask['deadline']) ?>">
                         <td class="task__select">
-                            <label class="checkbox task__checkbox">
+                            <label class="checkbox">
 
-                                <input class="checkbox__input visually-hidden" type="checkbox" name="taskname" value="1">
+                                <input class="checkbox__input visually-hidden task__checkbox" type="checkbox" name="taskname" value="<?= ($currentTask['id']) ?>"
+                                  <?= ($currentTask['is_finished']== '1') ? $checked : "" ?>>
 
                                 <span class="checkbox__text">
 

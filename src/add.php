@@ -9,7 +9,7 @@ if (!isset($_SESSION['userId'])) {
 
 $con = getConnection();
 
-$showCompleteTasks = rand(0, 1);
+$showCompleteTasks = isset($_GET['show_completed']) ? (int)$_GET['show_completed'] : 0;
 
 $projectId = null;
 
