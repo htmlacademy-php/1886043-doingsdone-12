@@ -2,6 +2,63 @@
 
 /**
  * @param mixed $con
+ * @param int $taskId
+ * @param int $isFinished
+ * @return void
+ */
+function changeTaskStatus(mixed $con, int $taskId, int $isFinished): void
+{
+    $sqlChangeTaskStatus = 'UPDATE tasks
+                               SET is_finished = ?
+                             WHERE id = ?';
+    $stmt = mysqli_prepare($con, $sqlChangeTaskStatus);
+
+    if ($stmt === false) {
+        exit('Ошибка mysqli_prepare в функции changeTaskStatus: '.mysqli_error($con));
+    }
+    mysqli_stmt_bind_param($stmt, 'ii', $isFinished, $taskId);
+
+    if (!mysqli_stmt_execute($stmt)) {
+        exit('Ошибка mysqli_stmt_execute в функции changeTaskStatus');
+    }
+}
+
+/**
+ * @param mixed $con
+ * @return array
+ */
+function todayTasks ($con): array
+{
+    $today = date('Y-m-d');
+
+    $sqlProjectsQuery = 'SELECT u.name as username, u.email, t.name as taskname
+                           FROM users as u
+                           JOIN projects as p ON u.id = p.user_id
+                           JOIN tasks as t ON p.id = t.project_id
+                          WHERE t.is_finished = 0 AND t.deadline = "'.$today.'"
+                       ORDER BY u.name';
+
+    $stmt = mysqli_prepare($con, $sqlProjectsQuery);
+
+    if ($stmt === false) {
+    exit('Ошибка mysqli_prepare'.mysqli_error($con));
+    }
+
+    if (!mysqli_stmt_execute($stmt)) {
+    exit('Ошибка stmt_execute');
+    }
+    $res = mysqli_stmt_get_result($stmt);
+    if ($res === false) {
+    exit('Ошибка stmt_get_result');
+    }
+    $foundTasks = mysqli_fetch_all($res, MYSQLI_ASSOC);
+
+    $restructArray = restructArray($foundTasks);
+    return $restructArray;
+}
+
+/**
+ * @param mixed $con
  * @param integer $userId
  * @param integer $projectId
  * @param string $deadline
@@ -9,33 +66,22 @@
  */
 function getUserTasksInTimeInterval ($con, int $userId, string $deadline, ?int $projectId): array
 {
-    switch ($deadline) {
-        case 'today':
-            $today = date('Y-m-d');
-            $sqlTaskQuery = 'SELECT t.id, t.name, t.deadline, t.project_id, t.is_finished, t.path_to_file
-                               FROM tasks as t
-                               JOIN projects as p ON p.id = t.project_id
-                              WHERE t.deadline = "'.$today.'" AND p.user_id = ?';
-            break;
-        case 'tomorrow':
-            $tomorrow = (new DateTime('1 days'))->format('Y-m-d');
-            $sqlTaskQuery = 'SELECT t.id, t.name, t.deadline, t.project_id, t.is_finished, t.path_to_file
-                               FROM tasks as t
-                               JOIN projects as p ON p.id = t.project_id
-                              WHERE t.deadline = "'.$tomorrow.'" AND p.user_id = ?';
-            break;
-        case 'yesterday':
-            $today = date('Y-m-d');
-            $sqlTaskQuery = 'SELECT t.id, t.name, t.deadline, t.project_id, t.is_finished, t.path_to_file
-                               FROM tasks as t
-                               JOIN projects as p ON p.id = t.project_id
-                              WHERE t.deadline < "'.$today.'" AND p.user_id = ?';
-            break;
-        case 'withoutTimeLimits':
-            $sqlTaskQuery = 'SELECT t.id, t.name, t.deadline, t.project_id, t.is_finished, t.path_to_file
+    $sqlTaskQuery = 'SELECT t.id, t.name, t.deadline, t.project_id, t.is_finished, t.path_to_file
                                FROM tasks as t
                                JOIN projects as p ON p.id = t.project_id
                               WHERE p.user_id = ?';
+    switch ($deadline) {
+        case 'today':
+            $today = date('Y-m-d');
+            $sqlTaskQuery = $sqlTaskQuery.' AND t.deadline = "'.$today.'"';
+            break;
+        case 'tomorrow':
+            $tomorrow = (new DateTime('1 days'))->format('Y-m-d');
+            $sqlTaskQuery = $sqlTaskQuery.' AND t.deadline = "'.$tomorrow.'"';
+            break;
+        case 'yesterday':
+            $today = date('Y-m-d');
+            $sqlTaskQuery = $sqlTaskQuery.' AND t.deadline = "'.$today.'"';
             break;
     }
 
@@ -93,26 +139,26 @@ function searchUserTasks(mixed $con, int $userId, string $seachTaskName): array
                                    AND MATCH t.name AGAINST (?)
                               ORDER BY t.creation_date DESC';
 
-$stmt = mysqli_prepare($con, $sqlSearchUserTasksQuery);
+    $stmt = mysqli_prepare($con, $sqlSearchUserTasksQuery);
 
-if ($stmt === false) {
-exit('Ошибка mysqli_prepare'.mysqli_error($con));
-}
+    if ($stmt === false) {
+    exit('Ошибка mysqli_prepare'.mysqli_error($con));
+    }
 
-if (!mysqli_stmt_bind_param($stmt, 'is', $userId, $seachTaskName,)) {
-exit('Ошибка stmt_bind 1');
-}
+    if (!mysqli_stmt_bind_param($stmt, 'is', $userId, $seachTaskName,)) {
+    exit('Ошибка stmt_bind 1');
+    }
 
-if (!mysqli_stmt_execute($stmt)) {
-exit('Ошибка stmt_execute');
-}
-$res = mysqli_stmt_get_result($stmt);
-if ($res === false) {
-exit('Ошибка stmt_get_result');
-}
-$foundTasks = mysqli_fetch_all($res, MYSQLI_ASSOC);
+    if (!mysqli_stmt_execute($stmt)) {
+    exit('Ошибка stmt_execute');
+    }
+    $res = mysqli_stmt_get_result($stmt);
+    if ($res === false) {
+    exit('Ошибка stmt_get_result');
+    }
+    $foundTasks = mysqli_fetch_all($res, MYSQLI_ASSOC);
 
-return $foundTasks;
+    return $foundTasks;
 
 }
 
@@ -410,6 +456,45 @@ function getUserProjectsWithTasksQuantities (mixed $con, int $userId): ?array
     return $projectsQueryResult;
 }
 
+
+/**
+ * @param array $array
+ * @return array
+ */
+function restructArray (array $array): array
+{
+    $restructArray[0] = ['username' => $array[0]['username'], 'email' => $array[0]['email'],'taskname' => []];
+
+    $arrayLength = count($array);
+
+    $j = 0;
+    for ($i = 1; $i <= $arrayLength - 1; $i++) {
+        $k=0;
+        foreach ($restructArray as $arrayElement) {
+            if ($arrayElement['username']===$array[$i]['username']) {
+                $k++;
+            };
+        };
+        if (!$k>0) {
+            $j++;
+            $restructArray[$j]['username'] = $array[$i]['username'];
+            $restructArray[$j]['email'] = $array[$i]['email'];
+            $restructArray[$j]['taskname'] = [];
+        }
+    }
+    $restructArrayLength = count($restructArray);
+    for ($i = 0; $i <= $restructArrayLength - 1; $i++) {
+        $k = 0;
+        for ($j = 0; $j <= $arrayLength - 1; $j++) {
+            if ($restructArray[$i]['username'] === $array[$j]['username']) {
+                $k++;
+                $restructArray[$i]['taskname'][$k] = $array[$j]['taskname'];
+            };
+        };
+    }
+    return $restructArray;
+}
+
 /**
  * @param string $taskFinishDate
  * @return int
@@ -459,6 +544,25 @@ function include_template(string $name, array $data = []): string
     return $result;
 }
 
+
+/**
+ * @return array
+ */
+function getEmptyArray(): array
+{
+    return
+        [
+            [
+                'id' => 0,
+                'name' => '',
+                'deadline' => null,
+                'project_id' => 0,
+                'is_finished' => 0,
+                'path_to_file' => null,
+            ],
+        ];
+};
+
 /**
  * @param int $projectId
  * @return string
@@ -466,9 +570,8 @@ function include_template(string $name, array $data = []): string
 function getProjectUrl(int $projectId): string
 {
     $params['projectId'] = $projectId;
-    $scriptname = 'index.php';
     $query = http_build_query($params);
-    $url = '/' . $scriptname . '?' . $query;
+    $url = '/' . 'index.php' . '?' . $query;
     return $url;
 }
 

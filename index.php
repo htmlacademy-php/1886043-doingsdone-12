@@ -17,6 +17,10 @@ if (!empty($_GET['projectId'])) {
     $projectId = (int)$_GET['projectId'];
 }
 
+if (isset($_GET['check'])) {
+    changeTaskStatus($con, (int)$_GET['task_id'], (int)$_GET['check']);
+}
+
 $anyProjects = getUserProjects($con, $_SESSION['userId']);
 
 if (empty($anyProjects )) {
@@ -27,42 +31,26 @@ if (empty($anyProjects )) {
         'title' => 'Нет проектов',
         ],
     ];
-    $tasks = [
-        [
-        'name' => 'Нет заданий',
-        'deadline' => null,
-        'project_id' => 0,
-        'is_finished' => 0,
-        'path_to_file' => null,
-        ],
-    ];
+
+    $tasks = getEmptyArray();
+    $tasks[0]['name'] = 'Нет заданий';
 } else {
     if (!checkUserTasks($con, $_SESSION['userId'])) {
         $projects = $anyProjects;
-        $tasks = [
-            [
-            'name' => 'Нет заданий',
-            'deadline' => null,
-            'project_id' => 0,
-            'is_finished' => 0,
-            'path_to_file' => null,
-            ],
-        ];
+        $tasks = getEmptyArray();
+        $tasks[0]['name'] = 'Нет заданий';
     } else {
         $projects = getUserProjectsWithTasksQuantities($con, $_SESSION['userId']);
         if (!empty($_GET['searchTaskName'])) {
             $_GET['searchTaskName'] = trim($_GET['searchTaskName']);
             $tasks = searchUserTasks($con, $_SESSION['userId'], $_GET['searchTaskName']);
             if (empty($tasks)) {
+                $tasks = getEmptyArray();
                 $tasks[0]['name'] = 'Ничего не найдено по Вашему запросу';
-                $tasks[0]['deadline'] = null;
-                $tasks[0]['project_id'] = null;
-                $tasks[0]['is_finished'] = 0;
-                $tasks[0]['path_to_file'] = null;
             }
         } elseif (isset($_GET['deadline'])) {
             $tasks = getUserTasksInTimeInterval($con, $_SESSION['userId'], $_GET['deadline'], $projectId);
-        }else{
+        } else {
             $tasks = getUserTasksInTimeInterval($con, $_SESSION['userId'], 'withoutTimeLimits', $projectId);
         }
 
