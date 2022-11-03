@@ -17,8 +17,8 @@ USE `doingsdone` ;
 -- Table `users`
 -- -----------------------------------------------------
 CREATE TABLE IF NOT EXISTS `users` (
-  `id` INT UNSIGNED NOT NULL,
-  `registration_date` DATE NOT NULL,
+  `id` INT UNSIGNED NOT NULL AUTO_INCREMENT,
+  `registration_date` TIMESTAMP NULL DEFAULT CURRENT_TIMESTAMP,
   `email` VARCHAR(80) NULL,
   `name` VARCHAR(80) NOT NULL,
   `password` VARCHAR(80) NULL,
@@ -31,7 +31,7 @@ ENGINE = InnoDB;
 -- Table `projects`
 -- -----------------------------------------------------
 CREATE TABLE IF NOT EXISTS `projects` (
-  `id` INT UNSIGNED NOT NULL,
+  `id` INT UNSIGNED NOT NULL AUTO_INCREMENT,
   `title` VARCHAR(45) NOT NULL,
   `user_id` INT UNSIGNED NOT NULL,
   PRIMARY KEY (`id`),
@@ -52,7 +52,7 @@ CREATE TABLE IF NOT EXISTS `tasks` (
   `id` INT UNSIGNED NOT NULL AUTO_INCREMENT,
   `name` VARCHAR(45) NOT NULL,
   `deadline` DATE NULL,
-  `creation_date` TIMESTAMP NULL,
+  `creation_date` TIMESTAMP NULL DEFAULT CURRENT_TIMESTAMP,
   `project_id` INT UNSIGNED NOT NULL,
   `is_finished` TINYINT NULL DEFAULT 0,
   `path_to_file` VARCHAR(80) NULL,

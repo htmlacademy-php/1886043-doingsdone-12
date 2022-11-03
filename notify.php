@@ -20,8 +20,8 @@ foreach ($allUsersTasks as $userTask)
 
     $message = new Email();
     $message->to($userTask['email']);
-    $message->from("keks@phpdemo.ru");
-    $message->subject("Уведомление от сервиса «Дела в порядке»");
+    $message->from('keks@phpdemo.ru');
+    $message->subject('Уведомление от сервиса «Дела в порядке»');
     $message->text($mailText);
 
     $mailer = getMailer();
