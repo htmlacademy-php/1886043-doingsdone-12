@@ -24,17 +24,7 @@ $errors = [];
 
 if ($_SERVER['REQUEST_METHOD']==='POST' && !empty($_POST['submit'])) {
 
-    $rules = [
-        'name' => function () {
-            return validateFilled('name');
-        },
-        'project' => function() {
-            return validateFilled('project');
-        },
-        'date' => function () {
-            return dateValidate('date');
-        }
-    ];
+    $rules = validateFields();
 
     foreach ($_POST as $key => $value) {
         if (isset($rules[$key])) {
@@ -44,7 +34,7 @@ if ($_SERVER['REQUEST_METHOD']==='POST' && !empty($_POST['submit'])) {
     }
 
     $errors = array_filter($errors);
-    $pathToUploadFile;
+    $pathToUploadFile = null;
 
     if (isset($_FILES)) {
         $currentTime = date("YmdHiss");

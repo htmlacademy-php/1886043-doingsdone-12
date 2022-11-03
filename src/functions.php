@@ -1,12 +1,17 @@
 <?php
 
+use Symfony\Component\Mailer\Transport;
+use Symfony\Component\Mailer\Mailer;
+
 /**
- * @param mixed $con
- * @param int $taskId
- * @param int $isFinished
- * @return void
+ * Присваивает задаче с определенным идентификатором переданный статус ("Закончено"/"Не закончено")
+ * @param mysqli $con ресурс соединения с SQL БД, возвращаемый функцией con
+ * @param int $taskId Идентификатор задачи, статус которой необходимо задать
+ * @param int $isFinished параметр - "флаг", "1" - задача закончена, "0" - не закончена
+ * @return void Результатом действия функции есть запись статуса задачи в БД,
+ *              у функции нет оператора return
  */
-function changeTaskStatus(mixed $con, int $taskId, int $isFinished): void
+function changeTaskStatus(mysqli $con, int $taskId, int $isFinished): void
 {
     $sqlChangeTaskStatus = 'UPDATE tasks
                                SET is_finished = ?
@@ -24,10 +29,12 @@ function changeTaskStatus(mixed $con, int $taskId, int $isFinished): void
 }
 
 /**
- * @param mixed $con
- * @return array
+ * Возвращает все задания всех пользователей, у которых
+ * дата выполнения совпадает с текущей датой
+ * @param mysqli $con ресурс соединения с SQL БД, возвращаемый функцией con
+ * @return array возвращаемый массив, с именем и email-ом пользователя, также все его задачи
  */
-function todayTasks ($con): array
+function todayTasks (mysqli $con): array
 {
     $today = date('Y-m-d');
 
@@ -41,30 +48,43 @@ function todayTasks ($con): array
     $stmt = mysqli_prepare($con, $sqlProjectsQuery);
 
     if ($stmt === false) {
-    exit('Ошибка mysqli_prepare'.mysqli_error($con));
+        exit('Ошибка mysqli_prepare'.mysqli_error($con));
     }
 
     if (!mysqli_stmt_execute($stmt)) {
-    exit('Ошибка stmt_execute');
+        exit('Ошибка stmt_execute');
     }
     $res = mysqli_stmt_get_result($stmt);
     if ($res === false) {
-    exit('Ошибка stmt_get_result');
+        exit('Ошибка stmt_get_result');
     }
     $foundTasks = mysqli_fetch_all($res, MYSQLI_ASSOC);
+    $result = [];
+    foreach($foundTasks as $task) {
+        $email = $task['email'];
+        if(!array_key_exists($email, $result)) {
+            $result[$email] = [
+                'username' => $task['username'],
+                'email' => $task['email'],
+                'task' => [],
+            ];
+        }
+        $result[$email]['task'][] = $task['taskname'];
+    }
 
-    $restructArray = restructArray($foundTasks);
-    return $restructArray;
+    return $result;
 }
 
 /**
- * @param mixed $con
- * @param integer $userId
- * @param integer $projectId
- * @param string $deadline
+ * Возвращает задания конкретного пользователя
+ * дата выполнения которых попадает в определенный временной промежуток
+ * @param mysqli $con ресурс соединения с SQL БД, возвращаемый функцией con
+ * @param int $userId идентификатор пользователя в БД
+ * @param integer $projectId идентификатор пректа в БД
+ * @param string $deadline дата запланированого выполнения задачи
  * @return array
  */
-function getUserTasksInTimeInterval ($con, int $userId, string $deadline, ?int $projectId): array
+function getUserTasksInTimeInterval (mysqli $con, int $userId, string $deadline, ?int $projectId): array
 {
     $sqlTaskQuery = 'SELECT t.id, t.name, t.deadline, t.project_id, t.is_finished, t.path_to_file
                                FROM tasks as t
@@ -125,12 +145,14 @@ function getUserTasksInTimeInterval ($con, int $userId, string $deadline, ?int $
 }
 
 /**
- * @param mixed $con
- * @param int $userId
+ * Возвращает задачи, названия которых соответствуют
+ * поисковому  запросу
+ * @param mysqli $con ресурс соединения с SQL БД, возвращаемый функцией con
+ * @param int $userId идентификатор пользователя в БД
  * @param string $searchTaskName
  * @return array
  */
-function searchUserTasks(mixed $con, int $userId, string $seachTaskName): array
+function searchUserTasks(mysqli $con, int $userId, string $seachTaskName): array
 {
     $sqlSearchUserTasksQuery = 'SELECT t.name, t.deadline, t.project_id, t.is_finished, t.path_to_file
                                   FROM tasks as t
@@ -142,19 +164,19 @@ function searchUserTasks(mixed $con, int $userId, string $seachTaskName): array
     $stmt = mysqli_prepare($con, $sqlSearchUserTasksQuery);
 
     if ($stmt === false) {
-    exit('Ошибка mysqli_prepare'.mysqli_error($con));
+        exit('Ошибка mysqli_prepare'.mysqli_error($con));
     }
 
     if (!mysqli_stmt_bind_param($stmt, 'is', $userId, $seachTaskName,)) {
-    exit('Ошибка stmt_bind 1');
+        exit('Ошибка stmt_bind 1');
     }
 
     if (!mysqli_stmt_execute($stmt)) {
-    exit('Ошибка stmt_execute');
+        exit('Ошибка stmt_execute');
     }
     $res = mysqli_stmt_get_result($stmt);
     if ($res === false) {
-    exit('Ошибка stmt_get_result');
+        exit('Ошибка stmt_get_result');
     }
     $foundTasks = mysqli_fetch_all($res, MYSQLI_ASSOC);
 
@@ -163,12 +185,14 @@ function searchUserTasks(mixed $con, int $userId, string $seachTaskName): array
 }
 
 /**
- * @param mixed $con
+ * Записывает данные нового проекта в БД
+ * @param mysqli $con ресурс соединения с SQL БД, возвращаемый функцией con
  * @param string $title
- * @param int $userId
- * @return void
+ * @param int $userId идентификатор пользователя в БД
+ * @return void Результатом действия функции есть добавление нового проекта в БД,
+ *              у функции нет оператора return
  */
-function addNewProject(mixed $con, string $title, int $userId): void
+function addNewProject(mysqli $con, string $title, int $userId): void
 {
     $sqlAddNewProjecQuery = 'INSERT INTO projects
                               SET title = ?, user_id = ?';
@@ -185,14 +209,16 @@ function addNewProject(mixed $con, string $title, int $userId): void
 }
 
 /**
- * @param mixed $con
- * @param string $name
- * @param integer $projectId
- * @param string $deadline
- * @param string  $filePath
- * @return void
+ * Записывает данные новой задачи в БД
+ * @param mysqli $con ресурс соединения с SQL БД, возвращаемый функцией con
+ * @param string $name название новой задачи, в таблице tasks
+ * @param integer $projectId идентификатор проектав БД
+ * @param string|null $deadline дата запланированого выполнения задачи
+ * @param string|null  $filePath полное имя (путь) к сохраняемому файлу
+ * @return void Результатом действия функции есть запись новой задачи в БД,
+ *              у функции нет оператора return
  */
-function addNewTask(mixed $con, string $name, int  $projectId, ?string  $deadline, ?string  $filePath): void
+function addNewTask(mysqli $con, string $name, int  $projectId, ?string  $deadline, ?string  $filePath): void
 {
     $sqlTaskInsertQuery = 'INSERT INTO tasks
                               SET name = ?, project_id = ?,
@@ -210,13 +236,15 @@ function addNewTask(mixed $con, string $name, int  $projectId, ?string  $deadlin
 }
 
 /**
- * @param mixed $con
- * @param string $name
- * @param string $email
- * @param string $password
- * @return void
+ * Записывает данные нового пользвователя в БД
+ * @param mysqli $con ресурс соединения с SQL БД, возвращаемый функцией con
+ * @param string $name имя пользователя в таблице users
+ * @param string $email адрес електронной почты пользователя
+ * @param string $password пароль пользвателя
+ * @return void Результатом действия функции есть создание нового пользователя в БД,
+ *              у функции нет оператора return
  */
-function createNewUser(mixed $con, string $email, string  $password, string  $name): void
+function createNewUser(mysqli $con, string $email, string  $password, string  $name): void
 {
     $sqlCreateNewUserQuery = 'INSERT INTO users
                                        SET email = ?,
@@ -224,7 +252,7 @@ function createNewUser(mixed $con, string $email, string  $password, string  $na
                                       name = ?';
     $stmt = mysqli_prepare($con, $sqlCreateNewUserQuery);
 
-        if ($stmt === false) {
+    if ($stmt === false) {
         exit('Ошибка mysqli_prepare в функции createNewUser: '.mysqli_error($con));
     }
     mysqli_stmt_bind_param($stmt, 'sss', $email, $password, $name);
@@ -235,42 +263,12 @@ function createNewUser(mixed $con, string $email, string  $password, string  $na
 }
 
 /**
- * @param mixed $con
- * @param string $email
- * @return string
+ * Проверяет наличие email-а в БД
+ * @param mysqli $con ресурс соединения с SQL БД, возвращаемый функцией con
+ * @param string $email адрес електронной почты пользователя
+ * @return bool возвращает ИСТИНА, если такой email существует
  */
-function validateUserPassword (mixed $con, string $email): string
-{
-    $sqlValidateUserPassword = 'SELECT u.password
-                        FROM users as u
-                        WHERE u.email = ?';
-
-    $stmt = mysqli_prepare($con, $sqlValidateUserPassword);
-
-    if ($stmt === false) {
-        exit('Ошибка mysqli_prepare в функции validateUserPassword'.mysqli_error($con));
-    }
-
-    mysqli_stmt_bind_param($stmt, 's', $email);
-
-    if (!mysqli_stmt_execute($stmt)) {
-        exit('Ошибка mysqli_execute в функции validateUserPassword');
-    }
-    $res = mysqli_stmt_get_result($stmt);
-    if ($res === false) {
-        exit('Ошибка get_result в функции validateUserPassword');
-    }
-    $validatedUserPassword = mysqli_fetch_all($res, MYSQLI_ASSOC);
-
-    return $validatedUserPassword['0']['password'];
-}
-
-/**
- * @param mixed $con
- * @param string $email
- * @return bool
- */
-function checkUsersEmail (mixed $con, string $email): bool
+function checkUsersEmail (mysqli $con, string $email): bool
 {
     $sqlcheckUsersEmail = 'SELECT u.email
                         FROM users as u
@@ -297,11 +295,12 @@ function checkUsersEmail (mixed $con, string $email): bool
 }
 
 /**
- * @param mixed $con
- * @param string $email
- * @return array
+ * Выбирает идентификатор и пароль пользователя с заданным email-ом тз БД
+ * @param mysqli $con ресурс соединения с SQL БД, возвращаемый функцией con
+ * @param string $email адрес електронной почты пользователя
+ * @return array массив с идентификатором, email-ом и паролем пользователя с заданным email-ом
  */
-function getUsersDataOnEmail (mixed $con, string $email): array
+function getUsersDataOnEmail (mysqli $con, string $email): array
 {
     $sqlgetUsersDataOnEmail = 'SELECT id, email, password
                                  FROM users
@@ -330,11 +329,12 @@ function getUsersDataOnEmail (mixed $con, string $email): array
 }
 
 /**
- * @param mixed $con
- * @param int $id
- * @return array
+ * Выбирает данные пользователя с заданным идентификатором
+ * @param mysqli $con ресурс соединения с SQL БД, возвращаемый функцией con
+ * @param int $id идентификатор пользователя в таблице users
+ * @return array массив с идентификатором, датой регистрации, email-ом, именем и паролем пользователя
  */
-function getUsersData (mixed $con, int $id): array
+function getUsersData (mysqli $con, int $id): array
 {
     $sqlUsersDataQuery = 'SELECT id, registration_date, email, name, password
                            FROM users
@@ -363,11 +363,12 @@ function getUsersData (mixed $con, int $id): array
 }
 
 /**
- * @param mixed $con
- * @param integer $userId
- * @return array
+ * Выбирает из БД проекти определенного пользователя
+ * @param mysqli $con ресурс соединения с SQL БД, возвращаемый функцией con
+ * @param int $userId идентификатор пользователя в БД
+ * @return array массив с идентификаторами и названиями проектов с заданным идентификатором пользователя
  */
-function getUserProjects(mixed $con, int $userId): array
+function getUserProjects(mysqli $con, int $userId): array
 {
     $sqlCheckUserProjects = 'SELECT id, title
                                FROM projects
@@ -393,11 +394,12 @@ function getUserProjects(mixed $con, int $userId): array
 };
 
 /**
- * @param mixed $con
- * @param int $userId
- * @return bool
+ * Проверяет, есть ли у определенного пользователя какие-либо задачи
+ * @param mysqli $con ресурс соединения с SQL БД, возвращаемый функцией con
+ * @param int $userId идентификатор пользователя в БД
+ * @return bool возвращает ИСТИНА, если количество задач проектов заданного пользователя отлично от нуля
  */
-function checkUserTasks(mixed $con, int $userId): bool
+function checkUserTasks(mysqli $con, int $userId): bool
 {
     $sqlCheckUserTasks = 'SELECT COUNT(t.id) as count, p.id
                             FROM projects as p
@@ -425,11 +427,13 @@ function checkUserTasks(mixed $con, int $userId): bool
 };
 
 /**
- * @param mixed $con
- * @param integer $userId
- * @return array
+ * Выбирает из БД проекты определенного пользователя
+ * и считает количество задач привязаных к каждому проекту
+ * @param mysqli $con ресурс соединения с SQL БД, возвращаемый функцией con
+ * @param int $userId идентификатор пользователя в БД
+ * @return array массив с насваниями проектов и их идентификаторами, также количествами задач, относящихся к данному проекту
  */
-function getUserProjectsWithTasksQuantities (mixed $con, int $userId): ?array
+function getUserProjectsWithTasksQuantities (mysqli $con, int $userId): ?array
 {
     $sqlProjectsQuery = 'SELECT COUNT(t.id) as count, p.title, p.id
                            FROM projects as p
@@ -456,48 +460,10 @@ function getUserProjectsWithTasksQuantities (mixed $con, int $userId): ?array
     return $projectsQueryResult;
 }
 
-
 /**
- * @param array $array
- * @return array
- */
-function restructArray (array $array): array
-{
-    $restructArray[0] = ['username' => $array[0]['username'], 'email' => $array[0]['email'],'taskname' => []];
-
-    $arrayLength = count($array);
-
-    $j = 0;
-    for ($i = 1; $i <= $arrayLength - 1; $i++) {
-        $k=0;
-        foreach ($restructArray as $arrayElement) {
-            if ($arrayElement['username']===$array[$i]['username']) {
-                $k++;
-            };
-        };
-        if (!$k>0) {
-            $j++;
-            $restructArray[$j]['username'] = $array[$i]['username'];
-            $restructArray[$j]['email'] = $array[$i]['email'];
-            $restructArray[$j]['taskname'] = [];
-        }
-    }
-    $restructArrayLength = count($restructArray);
-    for ($i = 0; $i <= $restructArrayLength - 1; $i++) {
-        $k = 0;
-        for ($j = 0; $j <= $arrayLength - 1; $j++) {
-            if ($restructArray[$i]['username'] === $array[$j]['username']) {
-                $k++;
-                $restructArray[$i]['taskname'][$k] = $array[$j]['taskname'];
-            };
-        };
-    }
-    return $restructArray;
-}
-
-/**
+ * Возвращает время до планового завершения задачи
  * @param string $taskFinishDate
- * @return int
+ * @return int возвращает время в формате Timestamp, что осталось до конца выполнения задачи
  */
 function timeToFinish(string $taskFinishDate): int
 {
@@ -506,8 +472,9 @@ function timeToFinish(string $taskFinishDate): int
 }
 
 /**
+ * Возвращает название класа, если время до завершения задачи менше суток
  * @param string $taskFinishDate
- * @return string
+ * @return string возвращает название класса, если время до окончания задания менше суток, иначе пустую строку
  */
 function less24hours (string $taskFinishDate = null): string
 {
@@ -521,6 +488,7 @@ function less24hours (string $taskFinishDate = null): string
 }
 
 /**
+ *
  * @param string $name
  * @param array $data
  * @return string
@@ -546,7 +514,10 @@ function include_template(string $name, array $data = []): string
 
 
 /**
- * @return array
+ * Для пользователя, у которого нет задач
+ * возвращает асоциативный массив, с структурой ключей
+ * для использования в шаблонах
+ * @return array возвращаемый массив с необходимой структурой ключей
  */
 function getEmptyArray(): array
 {
@@ -564,10 +535,11 @@ function getEmptyArray(): array
 };
 
 /**
- * @param int $projectId
- * @return string
+ * Формирует строку запроса для метода GET c идентификатором проекта
+ * @param int $projectId идентификатор проекта в БД
+ * @return string Возвращает строку запроса
  */
-function getProjectUrl(int $projectId): string
+function getProjectUrl(?int $projectId): string
 {
     $params['projectId'] = $projectId;
     $query = http_build_query($params);
@@ -576,25 +548,61 @@ function getProjectUrl(int $projectId): string
 }
 
 /**
- * @param string $deadline
+ * Формирует строку запроса для метода GET c датой выполнения задачи
+ * @param string $deadline дата запланированого выполнения задачи
  * @param int $showCompleteTasks
- * @return string
+ * @return string Возвращает строку запроса
  */
 function getDeadlineUrl(string $deadline, int $showCompleteTasks): string
 {
-    $params['deadline'] = $deadline;
+    $params = [
+        'deadline' => $deadline,
+    ];
     $scriptname = 'index.php';
-    $url = '/' . $scriptname . '?' . 'deadline='. $deadline;
+    $url = '/' . $scriptname . '?' . http_build_query($params);
     if ($showCompleteTasks===1) {
         $url = $url.'&show_completed=1';
     }
     return $url;
 }
 
+/**
+ * Для нового пользователя, у которого нет проектов,
+ * создает временный массив для использования в шаблонах
+ * @return array Возвращает пустой временный массив
+ */
+function getEmptyProjectArray(): array
+{
+    return [
+        'id' => 0,
+        'count' => null,
+        'title' => 'Нет проектов',
+    ];
+}
 
 /**
- * @param string $name
- * @return string
+ * Валидирует то поле, которое используется в массиве POST
+ * @return array возвращает массив с результатом валидации текущего поля
+ */
+function validateFields(): array
+{
+    return [
+        'name' => function () {
+            return validateFilled('name');
+        },
+        'project' => function() {
+            return validateFilled('project');
+        },
+        'date' => function () {
+            return dateValidate('date');
+        }
+    ];
+}
+
+/**
+ * Возвращает текущее значения для параметра с заданным именем из массива POST
+ * @param string $name имя параметра
+ * @return string возвращает текущее значение массива POST с заданным именем
  */
 function getPostVal(string $name): string
 {
@@ -602,8 +610,10 @@ function getPostVal(string $name): string
 }
 
 /**
- * @param string $name
- * @return string
+ * Проверяет заполнен ли, параметр с заданным именем из массива POST,
+ * если нет, возвращает строку с требованием заполнить данное поле
+ * @param string $name имя параметра в массиве POST
+ * @return string строка с требованием заполнить обязательное поле
  */
 function validateFilled(string $name): ?string
 {
@@ -614,8 +624,9 @@ function validateFilled(string $name): ?string
 }
 
 /**
- * @param string $email
- * @return string
+ * Проверяет коректность и заполненость поля с email-ом
+ * @param string $email адрес електронной почты пользователя
+ * @return string строка с текстом ошибки, если нет ошибки, то возвращает null
  */
 function validateEmail(string $email): ?string
 {
@@ -629,8 +640,10 @@ function validateEmail(string $email): ?string
 }
 
 /**
+ * Проверка соответствия правильности написания или своевременности вводимой даты
  * @param string $dateForVerification
- * @return string
+ * @return string возвращает текст ошибки, (если она существует), при некорекном формате даты,
+ *                и если дата менше текущей, иначе null
  */
 function dateValidate(string $dateForVerification): ?string
 {
@@ -645,4 +658,17 @@ function dateValidate(string $dateForVerification): ?string
         }
     }
     return null;
+}
+
+/**
+ * Функция использует библиотеку Symfony Mailer
+ * @return Mailer объект соединения с почтовым сервером
+ */
+function getMailer()
+{
+    $config = include __DIR__.'/../config.php';
+    $dsn = $config['mailer']['dsn'];
+    $transport = Transport::fromDsn($dsn);
+    $mailer = new Mailer($transport);
+    return $mailer;
 }

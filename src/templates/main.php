@@ -5,7 +5,7 @@
         <nav class="main-navigation">
             <ul class="main-navigation__list">
                 <?php foreach ($projects as $project) : ?>
-                    <li class="main-navigation__list-item <?= ($project['id'] == $projectId) ? 'main-navigation__list-item--active' : '' ?>">
+                    <li class="main-navigation__list-item <?= ($project['id'] === $projectId) ? 'main-navigation__list-item--active' : '' ?>">
                         <a class="main-navigation__list-item-link" href="<?= getProjectUrl($project['id']) ?>"><?= htmlspecialchars($project['title']); ?></a>
                         <span class="main-navigation__list-item-count"><?= isset($project['count']) ? ($project['count']) : '0' ?></span>
                     </li>
@@ -21,7 +21,7 @@
         <h2 class="content__main-heading">Список задач</h2>
 
         <form class="search-form" action="index.php" method="get" autocomplete="off">
-            <input class="search-form__input" type="text" name="searchTaskName" value="<?PHP (!empty($_GET['searchTaskName']))? print($_GET['searchTaskName']) : '' ?>" placeholder="Поиск по задачам">
+            <input class="search-form__input" type="text" name="searchTaskName" value="<?php (!empty($_GET['searchTaskName']))? print($_GET['searchTaskName']) : '' ?>" placeholder="Поиск по задачам">
 
             <input class="search-form__submit" type="submit" name="" value="Искать">
         </form>
@@ -29,17 +29,17 @@
         <div class="tasks-controls">
             <nav class="tasks-switch">
                 <a href="<?= getDeadlineUrl('withoutTimeLimits', $showCompleteTasks) ?>" class="tasks-switch__item
-                   <?= (isset($_GET['deadline'])&&(!$_GET['deadline'])!=='withoutTimeLimits') ? '' : 'tasks-switch__item--active' ?>
-                   <?= (isset($_GET['deadline'])&&($_GET['deadline'])=='withoutTimeLimits') ? 'tasks-switch__item--active' : '' ?>">
+                   <?= (isset($_GET['deadline'])&&(!$_GET['deadline']) !=='withoutTimeLimits') ? '' : 'tasks-switch__item--active' ?>
+                   <?= (isset($_GET['deadline'])&&($_GET['deadline']) ==='withoutTimeLimits') ? 'tasks-switch__item--active' : '' ?>">
                    Все задачи
                 </a>
-                <a href="<?= getDeadlineUrl('today', $showCompleteTasks) ?>" class="tasks-switch__item <?= (isset($_GET['deadline'])&&($_GET['deadline'])=='today') ? 'tasks-switch__item--active' : '' ?>">Повестка дня</a>
-                <a href="<?= getDeadlineUrl('tomorrow', $showCompleteTasks) ?>" class="tasks-switch__item <?= (isset($_GET['deadline'])&&($_GET['deadline'])=='tomorrow') ? 'tasks-switch__item--active' : '' ?>">Завтра</a>
-                <a href="<?= getDeadlineUrl('yesterday', $showCompleteTasks) ?>" class="tasks-switch__item <?= (isset($_GET['deadline'])&&($_GET['deadline'])=='yesterday') ? 'tasks-switch__item--active' : '' ?>">Просроченные</a>
+                <a href="<?= getDeadlineUrl('today', $showCompleteTasks) ?>" class="tasks-switch__item <?= (isset($_GET['deadline'])&&($_GET['deadline']) ==='today') ? 'tasks-switch__item--active' : '' ?>">Повестка дня</a>
+                <a href="<?= getDeadlineUrl('tomorrow', $showCompleteTasks) ?>" class="tasks-switch__item <?= (isset($_GET['deadline'])&&($_GET['deadline']) ==='tomorrow') ? 'tasks-switch__item--active' : '' ?>">Завтра</a>
+                <a href="<?= getDeadlineUrl('yesterday', $showCompleteTasks) ?>" class="tasks-switch__item <?= (isset($_GET['deadline'])&&($_GET['deadline']) ==='yesterday') ? 'tasks-switch__item--active' : '' ?>">Просроченные</a>
             </nav>
 
             <label class="checkbox checkbox__comlete__tasks">
-                <input class="checkbox__input visually-hidden show_completed" type="checkbox" <?= $showCompleteTasks == 1 ? "checked" : "" ?>>
+                <input class="checkbox__input visually-hidden show_completed" type="checkbox" <?= $showCompleteTasks === 1 ? "checked" : "" ?>>
                 <span class="checkbox__text">Показывать выполненные</span>
             </label>
         </div>
@@ -55,7 +55,7 @@
                             <label class="checkbox">
 
                                 <input class="checkbox__input visually-hidden task__checkbox" type="checkbox" name="taskname" value="<?= ($currentTask['id']) ?>"
-                                  <?= ($currentTask['is_finished']== '1') ? $checked : "" ?>>
+                                  <?= ($currentTask['is_finished'] === '1') ? $checked : "" ?>>
 
                                 <span class="checkbox__text">
 
