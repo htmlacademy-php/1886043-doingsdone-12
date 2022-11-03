@@ -24,13 +24,7 @@ if (isset($_GET['check'])) {
 $anyProjects = getUserProjects($con, $_SESSION['userId']);
 
 if (empty($anyProjects )) {
-    $projects = [
-        [
-        'id' => 0,
-        'count' => null,
-        'title' => 'Нет проектов',
-        ],
-    ];
+    $projects = getEmptyProjectArray();
 
     $tasks = getEmptyArray();
     $tasks[0]['name'] = 'Нет заданий';

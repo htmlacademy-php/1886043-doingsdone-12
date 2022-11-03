@@ -1,14 +1,12 @@
 <?php
 
-use Symfony\Component\Mailer\Transport;
-use Symfony\Component\Mailer\Mailer;
-
 session_start();
 
 mysqli_report(MYSQLI_REPORT_ERROR | MYSQLI_REPORT_STRICT);
 
 /**
-*@return mixed
+* Создает ресурс соединения с SQL БД
+*@return mysqli ресурс соединения с SQL БД
 */
 function getConnection()
 {
@@ -28,13 +26,3 @@ function getConnection()
         return $con;
     }
 }
-
-function getMailer()
-{
-    $config = include __DIR__.'/../config.php';
-    $dsn = $config['mailer']['dsn'];
-    $transport = Transport::fromDsn($dsn);
-    $mailer = new Mailer($transport);
-    return $mailer;
-}
-

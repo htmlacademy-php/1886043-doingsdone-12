@@ -16,7 +16,6 @@
 
         <input class="form__input <?=$classname;?>" type="text" name="email" id="email" value="<?=getPostVal('email'); ?>" placeholder="Введите e-mail">
 
-        <!--p class="form__message">E-mail введён некорректно</p-->
         <p class = "form__message"><span class="error_text"><?=$errors['email'] ?? ""; ?></span></p>
         </div>
 

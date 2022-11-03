@@ -18,7 +18,7 @@
 
   <div class="page-wrapper">
 
-    <div class="container <? isset($_SESSION['userId']) ? 'container--with-sidebar' : '' ?>">
+    <div class="container <?= isset($_SESSION['userId']) ? 'container--with-sidebar' : '' ?>">
       <header class="main-header">
         <a href="/index.php">
           <img src="../img/logo.png" width="153" height="42" alt="Логотип Дела в порядке">
