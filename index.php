@@ -25,7 +25,6 @@ $anyProjects = getUserProjects($con, $_SESSION['userId']);
 
 if (empty($anyProjects )) {
     $projects = getEmptyProjectArray();
-
     $tasks = getEmptyArray();
     $tasks[0]['name'] = 'Нет заданий';
 } else {
@@ -35,19 +34,23 @@ if (empty($anyProjects )) {
         $tasks[0]['name'] = 'Нет заданий';
     } else {
         $projects = getUserProjectsWithTasksQuantities($con, $_SESSION['userId']);
-        if (!empty($_GET['searchTaskName'])) {
-            $_GET['searchTaskName'] = trim($_GET['searchTaskName']);
-            $tasks = searchUserTasks($con, $_SESSION['userId'], $_GET['searchTaskName']);
-            if (empty($tasks)) {
-                $tasks = getEmptyArray();
-                $tasks[0]['name'] = 'Ничего не найдено по Вашему запросу';
-            }
-        } elseif (isset($_GET['deadline'])) {
-            $tasks = getUserTasksInTimeInterval($con, $_SESSION['userId'], $_GET['deadline'], $projectId);
-        } else {
-            $tasks = getUserTasksInTimeInterval($con, $_SESSION['userId'], 'withoutTimeLimits', $projectId);
-        }
+    }
+}
 
+if (!empty($_GET['searchTaskName'])) {
+    $_GET['searchTaskName'] = trim($_GET['searchTaskName']);
+    $tasks = searchUserTasks($con, $_SESSION['userId'], $_GET['searchTaskName']);
+        if (empty($tasks)) {
+            $tasks = getEmptyArray();
+            $tasks[0]['name'] = 'Ничего не найдено по Вашему запросу';
+        }
+} elseif (isset($_GET['deadline'])) {
+    $tasks = getUserTasksInTimeInterval($con, $_SESSION['userId'], $_GET['deadline'], $projectId);
+} else {
+    $tasks = getUserTasksInTimeInterval($con, $_SESSION['userId'], 'withoutTimeLimits', $projectId);
+    if (empty($tasks)) {
+        $tasks = getEmptyArray();
+        $tasks[0]['name'] = 'Нет заданий';
     }
 }
 

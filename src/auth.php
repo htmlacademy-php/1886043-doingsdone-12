@@ -36,7 +36,7 @@ if ($_SERVER['REQUEST_METHOD']==='POST' && !empty($_POST['submit'])) {
                 }
             }
         }
-    };
+    }
 
     $errors = array_filter($errors);
 
@@ -46,7 +46,7 @@ if ($_SERVER['REQUEST_METHOD']==='POST' && !empty($_POST['submit'])) {
         $_SESSION['userName'] =  $user['name'];
         $_SESSION['userEmail'] =  $user['email'];
         header('Location: /index.php');
-    };
+    }
 }
 
 $pageContent = include_template('auth.php', ['errors' => $errors,]);
