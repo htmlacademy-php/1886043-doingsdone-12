@@ -8,8 +8,6 @@
   <link rel="stylesheet" href="../css/style.css">
   <link rel="stylesheet" href="../css/flatpickr.min.css">
 
-  <?php session_start() ?>
-
 </head>
 
 <?php $classname = isset($_SESSION['userId']) ? " " : "body-background"; ?>
