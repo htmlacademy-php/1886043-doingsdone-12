@@ -20,13 +20,7 @@ if (!empty($_GET['projectId'])) {
 $anyProjects = getUserProjects($con, $_SESSION['userId']);
 
 if (empty($anyProjects )) {
-    $projects = [
-        [
-        'id' => 0,
-        'count' => null,
-        'title' => 'Нет проектов',
-        ],
-    ];
+    $projects = getEmptyProjectArray();
 } else {
     $projects = getUserProjectsWithTasksQuantities($con, $_SESSION['userId']);
 }
@@ -51,7 +45,7 @@ if ($_SERVER['REQUEST_METHOD']==='POST' && !empty($_POST['submit'])) {
     if (empty($errors)) {
         addNewProject($con, $_POST['project_name'], $_SESSION['userId']);
         header('Location: /index.php');
-    };
+    }
 
 }
 

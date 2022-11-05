@@ -80,7 +80,7 @@ function todayTasks (mysqli $con): array
  * дата выполнения которых попадает в определенный временной промежуток
  * @param mysqli $con ресурс соединения с SQL БД, возвращаемый функцией con
  * @param int $userId идентификатор пользователя в БД
- * @param integer $projectId идентификатор пректа в БД
+ * @param int $projectId идентификатор пректа в БД
  * @param string $deadline дата запланированого выполнения задачи
  * @return array
  */
@@ -101,7 +101,7 @@ function getUserTasksInTimeInterval (mysqli $con, int $userId, string $deadline,
             break;
         case 'yesterday':
             $today = date('Y-m-d');
-            $sqlTaskQuery = $sqlTaskQuery.' AND t.deadline = "'.$today.'"';
+            $sqlTaskQuery = $sqlTaskQuery.' AND t.deadline < "'.$today.'"';
             break;
     }
 
@@ -154,7 +154,7 @@ function getUserTasksInTimeInterval (mysqli $con, int $userId, string $deadline,
  */
 function searchUserTasks(mysqli $con, int $userId, string $seachTaskName): array
 {
-    $sqlSearchUserTasksQuery = 'SELECT t.name, t.deadline, t.project_id, t.is_finished, t.path_to_file
+    $sqlSearchUserTasksQuery = 'SELECT t.id, t.name, t.deadline, t.project_id, t.is_finished, t.path_to_file
                                   FROM tasks as t
                                   JOIN projects as p ON p.id = t.project_id
                                  WHERE p.user_id = ?
@@ -212,7 +212,7 @@ function addNewProject(mysqli $con, string $title, int $userId): void
  * Записывает данные новой задачи в БД
  * @param mysqli $con ресурс соединения с SQL БД, возвращаемый функцией con
  * @param string $name название новой задачи, в таблице tasks
- * @param integer $projectId идентификатор проектав БД
+ * @param int $projectId идентификатор проектав БД
  * @param string|null $deadline дата запланированого выполнения задачи
  * @param string|null  $filePath полное имя (путь) к сохраняемому файлу
  * @return void Результатом действия функции есть запись новой задачи в БД,
@@ -391,7 +391,7 @@ function getUserProjects(mysqli $con, int $userId): array
     $checkUserProjectsQueryResult = mysqli_fetch_all($res, MYSQLI_ASSOC);
 
     return $checkUserProjectsQueryResult;
-};
+}
 
 /**
  * Проверяет, есть ли у определенного пользователя какие-либо задачи
@@ -424,7 +424,7 @@ function checkUserTasks(mysqli $con, int $userId): bool
     $checkUserTasksQueryResult = mysqli_fetch_all($res, MYSQLI_ASSOC);
 
     return empty($checkUserTasksQueryResult) ? false : true;
-};
+}
 
 /**
  * Выбирает из БД проекты определенного пользователя
@@ -476,15 +476,12 @@ function timeToFinish(string $taskFinishDate): int
  * @param string $taskFinishDate
  * @return string возвращает название класса, если время до окончания задания менше суток, иначе пустую строку
  */
-function less24hours (string $taskFinishDate = null): string
+function less24hours (?string $taskFinishDate): string
 {
-    if ($taskFinishDate === null) {
-        return '';
-    } elseif (timeToFinish($taskFinishDate) < 86401) {
+    if (!is_null($taskFinishDate) && timeToFinish($taskFinishDate) < 86401) {
         return 'task--important';
-    } else {
-        return '';
     }
+    return '';
 }
 
 /**
@@ -512,7 +509,6 @@ function include_template(string $name, array $data = []): string
     return $result;
 }
 
-
 /**
  * Для пользователя, у которого нет задач
  * возвращает асоциативный массив, с структурой ключей
@@ -532,7 +528,7 @@ function getEmptyArray(): array
                 'path_to_file' => null,
             ],
         ];
-};
+}
 
 /**
  * Формирует строку запроса для метода GET c идентификатором проекта
@@ -574,9 +570,11 @@ function getDeadlineUrl(string $deadline, int $showCompleteTasks): string
 function getEmptyProjectArray(): array
 {
     return [
-        'id' => 0,
-        'count' => null,
-        'title' => 'Нет проектов',
+        [
+            'id' => 0,
+            'count' => null,
+            'title' => 'Нет проектов',
+        ],
     ];
 }
 
@@ -630,13 +628,14 @@ function validateFilled(string $name): ?string
  */
 function validateEmail(string $email): ?string
 {
+    $result = null;
     if (empty($_POST['email'])) {
-        return 'Это поле должно быть заполнено';
+        $result = 'Это поле должно быть заполнено';
     }
     if (!filter_input(INPUT_POST, $email, FILTER_VALIDATE_EMAIL)) {
-        return "E-mail введен некорректно";
+        $result = "E-mail введен некорректно";
     }
-    return null;
+    return $result;
 }
 
 /**

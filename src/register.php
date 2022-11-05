@@ -33,7 +33,7 @@ if ($_SERVER['REQUEST_METHOD']==='POST' && !empty($_POST['submit'])) {
         if ($checkedUsersEmail===true) {
             $errors['email'] = 'Указанный E-mail уже используеться';
         }
-    };
+    }
 
     $errors = array_filter($errors);
 
@@ -41,7 +41,7 @@ if ($_SERVER['REQUEST_METHOD']==='POST' && !empty($_POST['submit'])) {
         $passwordHash = password_hash($_POST['password'], PASSWORD_DEFAULT);
         createNewUser($con, $_POST['email'], $passwordHash, $_POST['name']);
         header('Location: /index.php');
-    };
+    }
 }
 
 $pageContent = include_template('register.php', ['errors' => $errors,]);

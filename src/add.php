@@ -9,6 +9,12 @@ if (!isset($_SESSION['userId'])) {
 
 $con = getConnection();
 
+$anyProjects = getUserProjects($con, $_SESSION['userId']);
+
+if (empty($anyProjects )) {
+    header('Location: /src/add-project.php');
+}
+
 $showCompleteTasks = isset($_GET['show_completed']) ? (int)$_GET['show_completed'] : 0;
 
 $projectId = null;
@@ -48,7 +54,7 @@ if ($_SERVER['REQUEST_METHOD']==='POST' && !empty($_POST['submit'])) {
         $date = ($_POST['date'] === '') ? null : ($_POST['date']);
         addNewTask($con, $_POST['name'], intval($_POST['project']), $date, $pathToUploadFile);
         header('Location: /index.php');
-    };
+    }
 
 }
 
